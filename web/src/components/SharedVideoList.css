@@ -1,0 +1,46 @@
+.shared-video-list {
+    margin-top: 20px;
+    padding: 20px;
+  }
+  
+  .shared-video-list h2 {
+    margin-bottom: 15px;
+  }
+  
+  .shared-video-list ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .video-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #f5f5f5;
+    border-radius: 5px;
+  }
+  
+  .video-player {
+    margin-right: 15px;
+  }
+  
+  .video-info {
+    flex: 1;
+  }
+  
+  .video-info h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.1em;
+  }
+  
+  .video-info p {
+    margin: 0;
+    font-size: 0.9em;
+    color: #666;
+  }
+  
+  .error {
+    color: red;
+    font-weight: bold;
+  }

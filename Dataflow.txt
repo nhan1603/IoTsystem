@@ -1,0 +1,14 @@
+Frontend (React)         Backend (Go)                PayPal
+      |                       |                        |
+      |--- create-order ----->|                        |
+      |                       |--- create order -----> | (PayPal API)
+      |                       |<-- orderID ----------- |
+      |<-- orderID -----------|                        |
+      |--- PayPal Buttons (orderID) ------------------>|
+      |<-- User approves payment --------------------- |
+      |                       |                        |
+      |--- capture-order ---->|                        |
+      |     (orderID)         |                        |
+      |                       |--- capture order------>| (PayPal API)
+      |                       |<-- result -------------|
+      |<-- success / fail ----|                        |
