@@ -113,6 +113,7 @@ func (h batchMessageHandler) Cleanup(_ sarama.ConsumerGroupSession) error {
 
 func (h batchMessageHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
 	batch := make([]ConsumerMessage, 0, h.batchSize)
+	log.Println("[Kafka Consumer] Starting to consume messages...")
 	timer := time.NewTimer(h.batchTimeout)
 	defer timer.Stop()
 
@@ -121,6 +122,7 @@ func (h batchMessageHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, clai
 			return
 		}
 		ctx := context.Background()
+		log.Printf("[Kafka Consumer] Processing batch of %d messages...\n", len(batch))
 		if err := h.processBatch(ctx, batch); err != nil {
 			log.Printf("batch processing failed: %v", err)
 		}

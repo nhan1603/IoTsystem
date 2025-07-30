@@ -77,3 +77,9 @@ kafka:
 
 kafka-topic:
 	docker compose -f ${DOCKER_COMPOSE_FILE} up -d kafka-topic
+
+# ----------------------------
+# simulator
+# ----------------------------
+api-simulator-run:
+	docker compose -f ${DOCKER_COMPOSE_FILE} up -d simulator
