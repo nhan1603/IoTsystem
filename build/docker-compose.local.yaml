@@ -54,6 +54,7 @@ services:
       - database
     environment:
       PG_URL: postgres://postgres:postgres@database:5432/iotsystem-pg?sslmode=disable
+      KAFKA_BROKER: "kafka:9092"
       SERVER_ADDR: ":3001"
       SGT_LOC: "Asia/Singapore"
       JWT_KEY: "CCO3rTNkzj5ll9JogQW5"
@@ -61,6 +62,51 @@ services:
       PAYPAL_SECRET: "EGGFFjj4CLPNgz8mWqgkMbeTnqpg0BjcIlAQ7iEPK9HKoUNblxuNCY5eQv2Xasjv07KCbC0sJTn3qpDH"
       CYPHER_KEY: "0123456789abcdef"
 
+  zookeeper:
+    container_name: iot-zookeeper
+    networks:
+      - iotsystem
+    image: confluentinc/cp-zookeeper:7.3.3
+    ports:
+      - "2181:2181"
+    hostname: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+  kafka:
+    container_name: iot-kafka
+    networks:
+      - iotsystem
+    image: confluentinc/cp-kafka:7.3.3
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: DOCKER://0.0.0.0:9092,LOCALHOST://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: DOCKER://kafka:9092,LOCALHOST://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: DOCKER:PLAINTEXT,LOCALHOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  kafka-topic:
+    image: confluentinc/cp-kafka:7.3.3
+    networks:
+      - iotsystem
+    depends_on:
+      - kafka
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics --bootstrap-server kafka:9092 --list
+
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic iot.incident --replication-factor 1 --partitions 1
+
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server kafka:9092 --list
+      "
   mockery:
     container_name: mockery
     image: vektra/mockery:v2.20.0

@@ -65,3 +65,15 @@ pg-drop:
 down:
 	docker-compose -f ${DOCKER_COMPOSE_FILE} -p=${PROJECT_NAME} down -v
 	docker-compose -f ${DOCKER_COMPOSE_FILE} -p=${PROJECT_NAME} rm --force --stop -v
+
+# ----------------------------
+# Base infrastructure
+# ----------------------------
+zookeeper:
+	docker compose -f ${DOCKER_COMPOSE_FILE} up -d zookeeper
+
+kafka:
+	docker compose -f ${DOCKER_COMPOSE_FILE} up -d kafka
+
+kafka-topic:
+	docker compose -f ${DOCKER_COMPOSE_FILE} up -d kafka-topic
