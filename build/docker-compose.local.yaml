@@ -55,6 +55,7 @@ services:
     environment:
       PG_URL: postgres://postgres:postgres@database:5432/iotsystem-pg?sslmode=disable
       KAFKA_BROKER: "kafka:9092"
+      IOT_TOPIC: "iot.sensor"
       SERVER_ADDR: ":3001"
       SGT_LOC: "Asia/Singapore"
       JWT_KEY: "CCO3rTNkzj5ll9JogQW5"
@@ -102,11 +103,23 @@ services:
       kafka-topics --bootstrap-server kafka:9092 --list
 
       echo -e 'Creating kafka topics'
-      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic iot.incident --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic iot.sensor --replication-factor 1 --partitions 1
 
       echo -e 'Successfully created the following topics:'
       kafka-topics --bootstrap-server kafka:9092 --list
       "
+
+  simulator:
+    container_name: simulator
+    build:
+      context: .
+      dockerfile: simulator.Dockerfile
+    networks:
+      - iotsystem
+    environment:
+      PG_URL: postgres://postgres:postgres@database:5432/iotsystem-pg?sslmode=disable
+      KAFKA_BROKER: "kafka:9092"
+      IOT_TOPIC: "iot.sensor"
   mockery:
     container_name: mockery
     image: vektra/mockery:v2.20.0

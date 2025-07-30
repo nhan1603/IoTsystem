@@ -31,7 +31,7 @@ func (rtr router) initKafkaConsumer() {
 	// Inital consumer kafka
 	consumer, err := kafka.NewBatchConsumer(
 		rtr.ctx,
-		os.Getenv("SCC_TOPIC"),
+		os.Getenv("IOT_TOPIC"),
 		os.Getenv("KAFKA_BROKER"),
 		rtr.iotCtrol.HandleBatch,
 		"iot",
