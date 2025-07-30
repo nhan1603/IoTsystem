@@ -56,12 +56,12 @@ func (c *impl) HandleBatch(ctx context.Context, msgs []kafka.ConsumerMessage) er
 		})
 	}
 	if len(readings) > 0 {
-		return c.repo.IoT().BatchInsertReadings(ctx, readings)
+		c.repo.IoT().BatchInsertReadings(ctx, readings)
+		latency := time.Since(start)
+		c.updateMetrics(len(readings), latency)
+		log.Printf("Processed batch of %d records in %v", len(readings), latency)
+		c.SaveMetrics(ctx)
 	}
-
-	latency := time.Since(start)
-	c.updateMetrics(len(readings), latency)
-	log.Printf("Processed batch of %d records in %v", len(readings), latency)
 
 	return nil
 }
