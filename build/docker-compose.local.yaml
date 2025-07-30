@@ -62,7 +62,7 @@ services:
       PAYPAL_CLIENT_ID: "Afbo85wWbwkEpevvCjTbzgVA2ibewJp6tiGL2Cp5gl561j4oTOPLJNf3zyo28Xrq5Q1_uIdmbEO1aMOK"
       PAYPAL_SECRET: "EGGFFjj4CLPNgz8mWqgkMbeTnqpg0BjcIlAQ7iEPK9HKoUNblxuNCY5eQv2Xasjv07KCbC0sJTn3qpDH"
       CYPHER_KEY: "0123456789abcdef"
-      BATCH_SIZE: "1000"
+      BATCH_SIZE: "10000"
       BATCH_TIMEOUT: "5s"
 
   zookeeper:
@@ -124,7 +124,7 @@ services:
       PG_URL: postgres://postgres:postgres@database:5432/iotsystem-pg?sslmode=disable
       KAFKA_BROKER: "kafka:9092"
       IOT_TOPIC: "iot.sensor"
-      BATCH_SIZE: "1000"
+      BATCH_SIZE: "10000"
   mockery:
     container_name: mockery
     image: vektra/mockery:v2.20.0

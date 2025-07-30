@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"math/rand"
 	"time"
 
@@ -19,7 +18,6 @@ func sendMessage(ctx context.Context, message model.IoTDataMessage, topic string
 		return fmt.Errorf("marshal input failed: %w", err)
 	}
 
-	log.Printf("Sending IoT sensor data to kafka: (topic: %s, payload: %s)\n", topic, string(b))
 	_, _, err = producer.SendMessage(ctx, topic, b, kafka.ProducerMessageOption{})
 	if err != nil {
 		return err
