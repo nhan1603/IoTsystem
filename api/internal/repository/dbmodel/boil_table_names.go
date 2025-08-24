@@ -5,14 +5,18 @@ package dbmodel
 
 var TableNames = struct {
 	BenchmarkMetrics string
+	Floors           string
 	IotDevices       string
 	SchemaMigrations string
 	SensorReadings   string
 	Users            string
+	Zones            string
 }{
 	BenchmarkMetrics: "benchmark_metrics",
+	Floors:           "floors",
 	IotDevices:       "iot_devices",
 	SchemaMigrations: "schema_migrations",
 	SensorReadings:   "sensor_readings",
 	Users:            "users",
+	Zones:            "zones",
 }

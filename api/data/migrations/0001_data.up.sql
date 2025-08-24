@@ -1,5 +1,3 @@
--- Enable TimescaleDB and hypertable on the time column
-CREATE EXTENSION IF NOT EXISTS timescaledb;
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- Create users table
@@ -59,9 +57,9 @@ CREATE TABLE sensor_readings
     location VARCHAR(255) NOT NULL,
     floor_id INTEGER NOT NULL REFERENCES floors(id),
     zone_id INTEGER NOT NULL REFERENCES zones(id),
-    temperature DOUBLE PRECISION,
-    humidity DOUBLE PRECISION,
-    co2 DOUBLE PRECISION,
+    temperature DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+    humidity DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+    co2 DOUBLE PRECISION NOT NULL DEFAULT 0.0,
     timestamp TIMESTAMP NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id, timestamp),
@@ -80,7 +78,6 @@ CREATE INDEX idx_zones_floor_id ON zones(floor_id);
 
 ALTER TABLE sensor_readings
     ADD COLUMN heat_index DOUBLE PRECISION GENERATED ALWAYS AS (
-        -- Simplified heat index calculation
         0.5 * (temperature + 61.0 + ((temperature-68.0)*1.2) + (humidity*0.094))
     ) STORED,
     ADD COLUMN air_quality_index INTEGER GENERATED ALWAYS AS (
@@ -90,19 +87,6 @@ ALTER TABLE sensor_readings
             WHEN co2 < 5000 THEN 3
             ELSE 4
         END
-    ) STORED,
-    ADD COLUMN reading_hash bytea GENERATED ALWAYS AS (
-        -- Composite hash of all sensor values
-        digest(
-            concat(
-                device_id, 
-                CAST(temperature AS text),
-                CAST(humidity AS text),
-                CAST(co2 AS text),
-                CAST(timestamp AS text)
-            ),
-            'sha256'
-        )
     ) STORED;
 
 -- Create benchmark metrics table

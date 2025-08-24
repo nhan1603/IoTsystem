@@ -50,8 +50,8 @@ func (r impl) GetDevices(ctx context.Context) ([]model.IoTDevice, error) {
 			Name:      row.Name,
 			Type:      row.Type,
 			Location:  row.Location,
-			Floor:     row.Floor,
-			Zone:      row.Zone,
+			Floor:     row.FloorID,
+			Zone:      row.ZoneID,
 			IsActive:  row.IsActive.Bool,
 			CreatedAt: row.CreatedAt.Time,
 			UpdatedAt: row.UpdatedAt.Time,
@@ -75,10 +75,10 @@ func (r impl) GetReadings(ctx context.Context, input model.GetReadingsInput) ([]
 		mods = append(mods, dbmodel.SensorReadingWhere.Location.EQ(input.Location))
 	}
 	if input.Floor > 0 {
-		mods = append(mods, dbmodel.SensorReadingWhere.Floor.EQ(input.Floor))
+		mods = append(mods, dbmodel.SensorReadingWhere.FloorID.EQ(input.Floor))
 	}
-	if input.Zone != "" {
-		mods = append(mods, dbmodel.SensorReadingWhere.Zone.EQ(input.Zone))
+	if input.Zone > 0 {
+		mods = append(mods, dbmodel.SensorReadingWhere.ZoneID.EQ(input.Zone))
 	}
 	if !input.StartTime.IsZero() {
 		mods = append(mods, dbmodel.SensorReadingWhere.Timestamp.GTE(input.StartTime))
@@ -104,11 +104,11 @@ func (r impl) GetReadings(ctx context.Context, input model.GetReadingsInput) ([]
 			DeviceName:  row.DeviceName,
 			DeviceType:  row.DeviceType,
 			Location:    row.Location,
-			Floor:       row.Floor,
-			Zone:        row.Zone,
-			Temperature: row.Temperature.Float64,
-			Humidity:    row.Humidity.Float64,
-			CO2:         row.Co2.Float64,
+			Floor:       row.FloorID,
+			Zone:        row.ZoneID,
+			Temperature: row.Temperature,
+			Humidity:    row.Humidity,
+			CO2:         row.Co2,
 			Timestamp:   row.Timestamp,
 			CreatedAt:   row.CreatedAt.Time,
 		})
@@ -168,7 +168,7 @@ func (r impl) BatchInsertReadings(ctx context.Context, readings []model.SensorRe
 	// Prepare batch insert statement
 	query := `
 		INSERT INTO sensor_readings 
-		(device_id, device_name, device_type, location, floor, zone, 
+		(device_id, device_name, device_type, location, floor_id, zone_id, 
 		 temperature, humidity, co2, timestamp, created_at)
 		VALUES 
 	`
@@ -199,6 +199,13 @@ func (r impl) BatchInsertReadings(ctx context.Context, readings []model.SensorRe
 	}
 
 	query += strings.Join(valueStrings, ",")
+	query += `
+        ON CONFLICT ON CONSTRAINT uq_device_ts 
+        DO UPDATE SET 
+            temperature = sensor_readings.temperature,
+            humidity = sensor_readings.humidity,
+            co2 = sensor_readings.co2
+    `
 
 	// Execute batch insert
 	_, err := r.dbConn.ExecContext(ctx, query, valueArgs...)

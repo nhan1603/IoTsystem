@@ -29,8 +29,8 @@ type IotDevice struct {
 	Name      string    `boil:"name" json:"name" toml:"name" yaml:"name"`
 	Type      string    `boil:"type" json:"type" toml:"type" yaml:"type"`
 	Location  string    `boil:"location" json:"location" toml:"location" yaml:"location"`
-	Floor     int       `boil:"floor" json:"floor" toml:"floor" yaml:"floor"`
-	Zone      string    `boil:"zone" json:"zone" toml:"zone" yaml:"zone"`
+	FloorID   int       `boil:"floor_id" json:"floor_id" toml:"floor_id" yaml:"floor_id"`
+	ZoneID    int       `boil:"zone_id" json:"zone_id" toml:"zone_id" yaml:"zone_id"`
 	IsActive  null.Bool `boil:"is_active" json:"is_active,omitempty" toml:"is_active" yaml:"is_active,omitempty"`
 	CreatedAt null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
 	UpdatedAt null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
@@ -45,8 +45,8 @@ var IotDeviceColumns = struct {
 	Name      string
 	Type      string
 	Location  string
-	Floor     string
-	Zone      string
+	FloorID   string
+	ZoneID    string
 	IsActive  string
 	CreatedAt string
 	UpdatedAt string
@@ -56,8 +56,8 @@ var IotDeviceColumns = struct {
 	Name:      "name",
 	Type:      "type",
 	Location:  "location",
-	Floor:     "floor",
-	Zone:      "zone",
+	FloorID:   "floor_id",
+	ZoneID:    "zone_id",
 	IsActive:  "is_active",
 	CreatedAt: "created_at",
 	UpdatedAt: "updated_at",
@@ -69,8 +69,8 @@ var IotDeviceTableColumns = struct {
 	Name      string
 	Type      string
 	Location  string
-	Floor     string
-	Zone      string
+	FloorID   string
+	ZoneID    string
 	IsActive  string
 	CreatedAt string
 	UpdatedAt string
@@ -80,8 +80,8 @@ var IotDeviceTableColumns = struct {
 	Name:      "iot_devices.name",
 	Type:      "iot_devices.type",
 	Location:  "iot_devices.location",
-	Floor:     "iot_devices.floor",
-	Zone:      "iot_devices.zone",
+	FloorID:   "iot_devices.floor_id",
+	ZoneID:    "iot_devices.zone_id",
 	IsActive:  "iot_devices.is_active",
 	CreatedAt: "iot_devices.created_at",
 	UpdatedAt: "iot_devices.updated_at",
@@ -119,8 +119,8 @@ var IotDeviceWhere = struct {
 	Name      whereHelperstring
 	Type      whereHelperstring
 	Location  whereHelperstring
-	Floor     whereHelperint
-	Zone      whereHelperstring
+	FloorID   whereHelperint
+	ZoneID    whereHelperint
 	IsActive  whereHelpernull_Bool
 	CreatedAt whereHelpernull_Time
 	UpdatedAt whereHelpernull_Time
@@ -130,8 +130,8 @@ var IotDeviceWhere = struct {
 	Name:      whereHelperstring{field: "\"iot_devices\".\"name\""},
 	Type:      whereHelperstring{field: "\"iot_devices\".\"type\""},
 	Location:  whereHelperstring{field: "\"iot_devices\".\"location\""},
-	Floor:     whereHelperint{field: "\"iot_devices\".\"floor\""},
-	Zone:      whereHelperstring{field: "\"iot_devices\".\"zone\""},
+	FloorID:   whereHelperint{field: "\"iot_devices\".\"floor_id\""},
+	ZoneID:    whereHelperint{field: "\"iot_devices\".\"zone_id\""},
 	IsActive:  whereHelpernull_Bool{field: "\"iot_devices\".\"is_active\""},
 	CreatedAt: whereHelpernull_Time{field: "\"iot_devices\".\"created_at\""},
 	UpdatedAt: whereHelpernull_Time{field: "\"iot_devices\".\"updated_at\""},
@@ -139,10 +139,17 @@ var IotDeviceWhere = struct {
 
 // IotDeviceRels is where relationship names are stored.
 var IotDeviceRels = struct {
-}{}
+	Floor string
+	Zone  string
+}{
+	Floor: "Floor",
+	Zone:  "Zone",
+}
 
 // iotDeviceR is where relationships are stored.
 type iotDeviceR struct {
+	Floor *Floor `boil:"Floor" json:"Floor" toml:"Floor" yaml:"Floor"`
+	Zone  *Zone  `boil:"Zone" json:"Zone" toml:"Zone" yaml:"Zone"`
 }
 
 // NewStruct creates a new relationship struct
@@ -150,12 +157,44 @@ func (*iotDeviceR) NewStruct() *iotDeviceR {
 	return &iotDeviceR{}
 }
 
+func (o *IotDevice) GetFloor() *Floor {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetFloor()
+}
+
+func (r *iotDeviceR) GetFloor() *Floor {
+	if r == nil {
+		return nil
+	}
+
+	return r.Floor
+}
+
+func (o *IotDevice) GetZone() *Zone {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetZone()
+}
+
+func (r *iotDeviceR) GetZone() *Zone {
+	if r == nil {
+		return nil
+	}
+
+	return r.Zone
+}
+
 // iotDeviceL is where Load methods for each relationship are stored.
 type iotDeviceL struct{}
 
 var (
-	iotDeviceAllColumns            = []string{"id", "device_id", "name", "type", "location", "floor", "zone", "is_active", "created_at", "updated_at"}
-	iotDeviceColumnsWithoutDefault = []string{"device_id", "name", "type", "location", "floor", "zone"}
+	iotDeviceAllColumns            = []string{"id", "device_id", "name", "type", "location", "floor_id", "zone_id", "is_active", "created_at", "updated_at"}
+	iotDeviceColumnsWithoutDefault = []string{"device_id", "name", "type", "location", "floor_id", "zone_id"}
 	iotDeviceColumnsWithDefault    = []string{"id", "is_active", "created_at", "updated_at"}
 	iotDevicePrimaryKeyColumns     = []string{"id"}
 	iotDeviceGeneratedColumns      = []string{}
@@ -250,6 +289,346 @@ func (q iotDeviceQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (
 	}
 
 	return count > 0, nil
+}
+
+// Floor pointed to by the foreign key.
+func (o *IotDevice) Floor(mods ...qm.QueryMod) floorQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.FloorID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Floors(queryMods...)
+}
+
+// Zone pointed to by the foreign key.
+func (o *IotDevice) Zone(mods ...qm.QueryMod) zoneQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.ZoneID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Zones(queryMods...)
+}
+
+// LoadFloor allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (iotDeviceL) LoadFloor(ctx context.Context, e boil.ContextExecutor, singular bool, maybeIotDevice interface{}, mods queries.Applicator) error {
+	var slice []*IotDevice
+	var object *IotDevice
+
+	if singular {
+		var ok bool
+		object, ok = maybeIotDevice.(*IotDevice)
+		if !ok {
+			object = new(IotDevice)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeIotDevice)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeIotDevice))
+			}
+		}
+	} else {
+		s, ok := maybeIotDevice.(*[]*IotDevice)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeIotDevice)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeIotDevice))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &iotDeviceR{}
+		}
+		args[object.FloorID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &iotDeviceR{}
+			}
+
+			args[obj.FloorID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`floors`),
+		qm.WhereIn(`floors.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Floor")
+	}
+
+	var resultSlice []*Floor
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Floor")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for floors")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for floors")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Floor = foreign
+		if foreign.R == nil {
+			foreign.R = &floorR{}
+		}
+		foreign.R.IotDevices = append(foreign.R.IotDevices, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.FloorID == foreign.ID {
+				local.R.Floor = foreign
+				if foreign.R == nil {
+					foreign.R = &floorR{}
+				}
+				foreign.R.IotDevices = append(foreign.R.IotDevices, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadZone allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (iotDeviceL) LoadZone(ctx context.Context, e boil.ContextExecutor, singular bool, maybeIotDevice interface{}, mods queries.Applicator) error {
+	var slice []*IotDevice
+	var object *IotDevice
+
+	if singular {
+		var ok bool
+		object, ok = maybeIotDevice.(*IotDevice)
+		if !ok {
+			object = new(IotDevice)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeIotDevice)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeIotDevice))
+			}
+		}
+	} else {
+		s, ok := maybeIotDevice.(*[]*IotDevice)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeIotDevice)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeIotDevice))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &iotDeviceR{}
+		}
+		args[object.ZoneID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &iotDeviceR{}
+			}
+
+			args[obj.ZoneID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`zones`),
+		qm.WhereIn(`zones.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Zone")
+	}
+
+	var resultSlice []*Zone
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Zone")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for zones")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for zones")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Zone = foreign
+		if foreign.R == nil {
+			foreign.R = &zoneR{}
+		}
+		foreign.R.IotDevices = append(foreign.R.IotDevices, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ZoneID == foreign.ID {
+				local.R.Zone = foreign
+				if foreign.R == nil {
+					foreign.R = &zoneR{}
+				}
+				foreign.R.IotDevices = append(foreign.R.IotDevices, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetFloor of the iotDevice to the related item.
+// Sets o.R.Floor to related.
+// Adds o to related.R.IotDevices.
+func (o *IotDevice) SetFloor(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Floor) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"iot_devices\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"floor_id"}),
+		strmangle.WhereClause("\"", "\"", 2, iotDevicePrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.FloorID = related.ID
+	if o.R == nil {
+		o.R = &iotDeviceR{
+			Floor: related,
+		}
+	} else {
+		o.R.Floor = related
+	}
+
+	if related.R == nil {
+		related.R = &floorR{
+			IotDevices: IotDeviceSlice{o},
+		}
+	} else {
+		related.R.IotDevices = append(related.R.IotDevices, o)
+	}
+
+	return nil
+}
+
+// SetZone of the iotDevice to the related item.
+// Sets o.R.Zone to related.
+// Adds o to related.R.IotDevices.
+func (o *IotDevice) SetZone(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Zone) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"iot_devices\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"zone_id"}),
+		strmangle.WhereClause("\"", "\"", 2, iotDevicePrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.ZoneID = related.ID
+	if o.R == nil {
+		o.R = &iotDeviceR{
+			Zone: related,
+		}
+	} else {
+		o.R.Zone = related
+	}
+
+	if related.R == nil {
+		related.R = &zoneR{
+			IotDevices: IotDeviceSlice{o},
+		}
+	} else {
+		related.R.IotDevices = append(related.R.IotDevices, o)
+	}
+
+	return nil
 }
 
 // IotDevices retrieves all the records using an executor.

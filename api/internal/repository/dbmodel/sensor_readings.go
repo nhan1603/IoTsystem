@@ -24,109 +24,119 @@ import (
 
 // SensorReading is an object representing the database table.
 type SensorReading struct {
-	ID          int64        `boil:"id" json:"id" toml:"id" yaml:"id"`
-	DeviceID    string       `boil:"device_id" json:"device_id" toml:"device_id" yaml:"device_id"`
-	DeviceName  string       `boil:"device_name" json:"device_name" toml:"device_name" yaml:"device_name"`
-	DeviceType  string       `boil:"device_type" json:"device_type" toml:"device_type" yaml:"device_type"`
-	Location    string       `boil:"location" json:"location" toml:"location" yaml:"location"`
-	Floor       int          `boil:"floor" json:"floor" toml:"floor" yaml:"floor"`
-	Zone        string       `boil:"zone" json:"zone" toml:"zone" yaml:"zone"`
-	Temperature null.Float64 `boil:"temperature" json:"temperature,omitempty" toml:"temperature" yaml:"temperature,omitempty"`
-	Humidity    null.Float64 `boil:"humidity" json:"humidity,omitempty" toml:"humidity" yaml:"humidity,omitempty"`
-	Co2         null.Float64 `boil:"co2" json:"co2,omitempty" toml:"co2" yaml:"co2,omitempty"`
-	Timestamp   time.Time    `boil:"timestamp" json:"timestamp" toml:"timestamp" yaml:"timestamp"`
-	CreatedAt   null.Time    `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
+	ID              int64        `boil:"id" json:"id" toml:"id" yaml:"id"`
+	DeviceID        string       `boil:"device_id" json:"device_id" toml:"device_id" yaml:"device_id"`
+	DeviceName      string       `boil:"device_name" json:"device_name" toml:"device_name" yaml:"device_name"`
+	DeviceType      string       `boil:"device_type" json:"device_type" toml:"device_type" yaml:"device_type"`
+	Location        string       `boil:"location" json:"location" toml:"location" yaml:"location"`
+	FloorID         int          `boil:"floor_id" json:"floor_id" toml:"floor_id" yaml:"floor_id"`
+	ZoneID          int          `boil:"zone_id" json:"zone_id" toml:"zone_id" yaml:"zone_id"`
+	Temperature     float64      `boil:"temperature" json:"temperature" toml:"temperature" yaml:"temperature"`
+	Humidity        float64      `boil:"humidity" json:"humidity" toml:"humidity" yaml:"humidity"`
+	Co2             float64      `boil:"co2" json:"co2" toml:"co2" yaml:"co2"`
+	Timestamp       time.Time    `boil:"timestamp" json:"timestamp" toml:"timestamp" yaml:"timestamp"`
+	CreatedAt       null.Time    `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
+	HeatIndex       null.Float64 `boil:"heat_index" json:"heat_index,omitempty" toml:"heat_index" yaml:"heat_index,omitempty"`
+	AirQualityIndex null.Int     `boil:"air_quality_index" json:"air_quality_index,omitempty" toml:"air_quality_index" yaml:"air_quality_index,omitempty"`
 
 	R *sensorReadingR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L sensorReadingL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var SensorReadingColumns = struct {
-	ID          string
-	DeviceID    string
-	DeviceName  string
-	DeviceType  string
-	Location    string
-	Floor       string
-	Zone        string
-	Temperature string
-	Humidity    string
-	Co2         string
-	Timestamp   string
-	CreatedAt   string
+	ID              string
+	DeviceID        string
+	DeviceName      string
+	DeviceType      string
+	Location        string
+	FloorID         string
+	ZoneID          string
+	Temperature     string
+	Humidity        string
+	Co2             string
+	Timestamp       string
+	CreatedAt       string
+	HeatIndex       string
+	AirQualityIndex string
 }{
-	ID:          "id",
-	DeviceID:    "device_id",
-	DeviceName:  "device_name",
-	DeviceType:  "device_type",
-	Location:    "location",
-	Floor:       "floor",
-	Zone:        "zone",
-	Temperature: "temperature",
-	Humidity:    "humidity",
-	Co2:         "co2",
-	Timestamp:   "timestamp",
-	CreatedAt:   "created_at",
+	ID:              "id",
+	DeviceID:        "device_id",
+	DeviceName:      "device_name",
+	DeviceType:      "device_type",
+	Location:        "location",
+	FloorID:         "floor_id",
+	ZoneID:          "zone_id",
+	Temperature:     "temperature",
+	Humidity:        "humidity",
+	Co2:             "co2",
+	Timestamp:       "timestamp",
+	CreatedAt:       "created_at",
+	HeatIndex:       "heat_index",
+	AirQualityIndex: "air_quality_index",
 }
 
 var SensorReadingTableColumns = struct {
-	ID          string
-	DeviceID    string
-	DeviceName  string
-	DeviceType  string
-	Location    string
-	Floor       string
-	Zone        string
-	Temperature string
-	Humidity    string
-	Co2         string
-	Timestamp   string
-	CreatedAt   string
+	ID              string
+	DeviceID        string
+	DeviceName      string
+	DeviceType      string
+	Location        string
+	FloorID         string
+	ZoneID          string
+	Temperature     string
+	Humidity        string
+	Co2             string
+	Timestamp       string
+	CreatedAt       string
+	HeatIndex       string
+	AirQualityIndex string
 }{
-	ID:          "sensor_readings.id",
-	DeviceID:    "sensor_readings.device_id",
-	DeviceName:  "sensor_readings.device_name",
-	DeviceType:  "sensor_readings.device_type",
-	Location:    "sensor_readings.location",
-	Floor:       "sensor_readings.floor",
-	Zone:        "sensor_readings.zone",
-	Temperature: "sensor_readings.temperature",
-	Humidity:    "sensor_readings.humidity",
-	Co2:         "sensor_readings.co2",
-	Timestamp:   "sensor_readings.timestamp",
-	CreatedAt:   "sensor_readings.created_at",
+	ID:              "sensor_readings.id",
+	DeviceID:        "sensor_readings.device_id",
+	DeviceName:      "sensor_readings.device_name",
+	DeviceType:      "sensor_readings.device_type",
+	Location:        "sensor_readings.location",
+	FloorID:         "sensor_readings.floor_id",
+	ZoneID:          "sensor_readings.zone_id",
+	Temperature:     "sensor_readings.temperature",
+	Humidity:        "sensor_readings.humidity",
+	Co2:             "sensor_readings.co2",
+	Timestamp:       "sensor_readings.timestamp",
+	CreatedAt:       "sensor_readings.created_at",
+	HeatIndex:       "sensor_readings.heat_index",
+	AirQualityIndex: "sensor_readings.air_quality_index",
 }
 
 // Generated where
 
-type whereHelpernull_Float64 struct{ field string }
+type whereHelpernull_Int struct{ field string }
 
-func (w whereHelpernull_Float64) EQ(x null.Float64) qm.QueryMod {
+func (w whereHelpernull_Int) EQ(x null.Int) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, false, x)
 }
-func (w whereHelpernull_Float64) NEQ(x null.Float64) qm.QueryMod {
+func (w whereHelpernull_Int) NEQ(x null.Int) qm.QueryMod {
 	return qmhelper.WhereNullEQ(w.field, true, x)
 }
-func (w whereHelpernull_Float64) LT(x null.Float64) qm.QueryMod {
+func (w whereHelpernull_Int) LT(x null.Int) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LT, x)
 }
-func (w whereHelpernull_Float64) LTE(x null.Float64) qm.QueryMod {
+func (w whereHelpernull_Int) LTE(x null.Int) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.LTE, x)
 }
-func (w whereHelpernull_Float64) GT(x null.Float64) qm.QueryMod {
+func (w whereHelpernull_Int) GT(x null.Int) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GT, x)
 }
-func (w whereHelpernull_Float64) GTE(x null.Float64) qm.QueryMod {
+func (w whereHelpernull_Int) GTE(x null.Int) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
-func (w whereHelpernull_Float64) IN(slice []float64) qm.QueryMod {
+func (w whereHelpernull_Int) IN(slice []int) qm.QueryMod {
 	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
 	}
 	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
 }
-func (w whereHelpernull_Float64) NIN(slice []float64) qm.QueryMod {
+func (w whereHelpernull_Int) NIN(slice []int) qm.QueryMod {
 	values := make([]interface{}, 0, len(slice))
 	for _, value := range slice {
 		values = append(values, value)
@@ -134,43 +144,54 @@ func (w whereHelpernull_Float64) NIN(slice []float64) qm.QueryMod {
 	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
 }
 
-func (w whereHelpernull_Float64) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_Float64) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+func (w whereHelpernull_Int) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_Int) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
 
 var SensorReadingWhere = struct {
-	ID          whereHelperint64
-	DeviceID    whereHelperstring
-	DeviceName  whereHelperstring
-	DeviceType  whereHelperstring
-	Location    whereHelperstring
-	Floor       whereHelperint
-	Zone        whereHelperstring
-	Temperature whereHelpernull_Float64
-	Humidity    whereHelpernull_Float64
-	Co2         whereHelpernull_Float64
-	Timestamp   whereHelpertime_Time
-	CreatedAt   whereHelpernull_Time
+	ID              whereHelperint64
+	DeviceID        whereHelperstring
+	DeviceName      whereHelperstring
+	DeviceType      whereHelperstring
+	Location        whereHelperstring
+	FloorID         whereHelperint
+	ZoneID          whereHelperint
+	Temperature     whereHelperfloat64
+	Humidity        whereHelperfloat64
+	Co2             whereHelperfloat64
+	Timestamp       whereHelpertime_Time
+	CreatedAt       whereHelpernull_Time
+	HeatIndex       whereHelpernull_Float64
+	AirQualityIndex whereHelpernull_Int
 }{
-	ID:          whereHelperint64{field: "\"sensor_readings\".\"id\""},
-	DeviceID:    whereHelperstring{field: "\"sensor_readings\".\"device_id\""},
-	DeviceName:  whereHelperstring{field: "\"sensor_readings\".\"device_name\""},
-	DeviceType:  whereHelperstring{field: "\"sensor_readings\".\"device_type\""},
-	Location:    whereHelperstring{field: "\"sensor_readings\".\"location\""},
-	Floor:       whereHelperint{field: "\"sensor_readings\".\"floor\""},
-	Zone:        whereHelperstring{field: "\"sensor_readings\".\"zone\""},
-	Temperature: whereHelpernull_Float64{field: "\"sensor_readings\".\"temperature\""},
-	Humidity:    whereHelpernull_Float64{field: "\"sensor_readings\".\"humidity\""},
-	Co2:         whereHelpernull_Float64{field: "\"sensor_readings\".\"co2\""},
-	Timestamp:   whereHelpertime_Time{field: "\"sensor_readings\".\"timestamp\""},
-	CreatedAt:   whereHelpernull_Time{field: "\"sensor_readings\".\"created_at\""},
+	ID:              whereHelperint64{field: "\"sensor_readings\".\"id\""},
+	DeviceID:        whereHelperstring{field: "\"sensor_readings\".\"device_id\""},
+	DeviceName:      whereHelperstring{field: "\"sensor_readings\".\"device_name\""},
+	DeviceType:      whereHelperstring{field: "\"sensor_readings\".\"device_type\""},
+	Location:        whereHelperstring{field: "\"sensor_readings\".\"location\""},
+	FloorID:         whereHelperint{field: "\"sensor_readings\".\"floor_id\""},
+	ZoneID:          whereHelperint{field: "\"sensor_readings\".\"zone_id\""},
+	Temperature:     whereHelperfloat64{field: "\"sensor_readings\".\"temperature\""},
+	Humidity:        whereHelperfloat64{field: "\"sensor_readings\".\"humidity\""},
+	Co2:             whereHelperfloat64{field: "\"sensor_readings\".\"co2\""},
+	Timestamp:       whereHelpertime_Time{field: "\"sensor_readings\".\"timestamp\""},
+	CreatedAt:       whereHelpernull_Time{field: "\"sensor_readings\".\"created_at\""},
+	HeatIndex:       whereHelpernull_Float64{field: "\"sensor_readings\".\"heat_index\""},
+	AirQualityIndex: whereHelpernull_Int{field: "\"sensor_readings\".\"air_quality_index\""},
 }
 
 // SensorReadingRels is where relationship names are stored.
 var SensorReadingRels = struct {
-}{}
+	Floor string
+	Zone  string
+}{
+	Floor: "Floor",
+	Zone:  "Zone",
+}
 
 // sensorReadingR is where relationships are stored.
 type sensorReadingR struct {
+	Floor *Floor `boil:"Floor" json:"Floor" toml:"Floor" yaml:"Floor"`
+	Zone  *Zone  `boil:"Zone" json:"Zone" toml:"Zone" yaml:"Zone"`
 }
 
 // NewStruct creates a new relationship struct
@@ -178,15 +199,47 @@ func (*sensorReadingR) NewStruct() *sensorReadingR {
 	return &sensorReadingR{}
 }
 
+func (o *SensorReading) GetFloor() *Floor {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetFloor()
+}
+
+func (r *sensorReadingR) GetFloor() *Floor {
+	if r == nil {
+		return nil
+	}
+
+	return r.Floor
+}
+
+func (o *SensorReading) GetZone() *Zone {
+	if o == nil {
+		return nil
+	}
+
+	return o.R.GetZone()
+}
+
+func (r *sensorReadingR) GetZone() *Zone {
+	if r == nil {
+		return nil
+	}
+
+	return r.Zone
+}
+
 // sensorReadingL is where Load methods for each relationship are stored.
 type sensorReadingL struct{}
 
 var (
-	sensorReadingAllColumns            = []string{"id", "device_id", "device_name", "device_type", "location", "floor", "zone", "temperature", "humidity", "co2", "timestamp", "created_at"}
-	sensorReadingColumnsWithoutDefault = []string{"device_id", "device_name", "device_type", "location", "floor", "zone", "timestamp"}
-	sensorReadingColumnsWithDefault    = []string{"id", "temperature", "humidity", "co2", "created_at"}
+	sensorReadingAllColumns            = []string{"id", "device_id", "device_name", "device_type", "location", "floor_id", "zone_id", "temperature", "humidity", "co2", "timestamp", "created_at", "heat_index", "air_quality_index"}
+	sensorReadingColumnsWithoutDefault = []string{"device_id", "device_name", "device_type", "location", "floor_id", "zone_id", "timestamp"}
+	sensorReadingColumnsWithDefault    = []string{"id", "temperature", "humidity", "co2", "created_at", "heat_index", "air_quality_index"}
 	sensorReadingPrimaryKeyColumns     = []string{"id", "timestamp"}
-	sensorReadingGeneratedColumns      = []string{}
+	sensorReadingGeneratedColumns      = []string{"heat_index", "air_quality_index"}
 )
 
 type (
@@ -280,6 +333,346 @@ func (q sensorReadingQuery) Exists(ctx context.Context, exec boil.ContextExecuto
 	return count > 0, nil
 }
 
+// Floor pointed to by the foreign key.
+func (o *SensorReading) Floor(mods ...qm.QueryMod) floorQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.FloorID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Floors(queryMods...)
+}
+
+// Zone pointed to by the foreign key.
+func (o *SensorReading) Zone(mods ...qm.QueryMod) zoneQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("\"id\" = ?", o.ZoneID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return Zones(queryMods...)
+}
+
+// LoadFloor allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (sensorReadingL) LoadFloor(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSensorReading interface{}, mods queries.Applicator) error {
+	var slice []*SensorReading
+	var object *SensorReading
+
+	if singular {
+		var ok bool
+		object, ok = maybeSensorReading.(*SensorReading)
+		if !ok {
+			object = new(SensorReading)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeSensorReading)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeSensorReading))
+			}
+		}
+	} else {
+		s, ok := maybeSensorReading.(*[]*SensorReading)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeSensorReading)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeSensorReading))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &sensorReadingR{}
+		}
+		args[object.FloorID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &sensorReadingR{}
+			}
+
+			args[obj.FloorID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`floors`),
+		qm.WhereIn(`floors.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Floor")
+	}
+
+	var resultSlice []*Floor
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Floor")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for floors")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for floors")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Floor = foreign
+		if foreign.R == nil {
+			foreign.R = &floorR{}
+		}
+		foreign.R.SensorReadings = append(foreign.R.SensorReadings, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.FloorID == foreign.ID {
+				local.R.Floor = foreign
+				if foreign.R == nil {
+					foreign.R = &floorR{}
+				}
+				foreign.R.SensorReadings = append(foreign.R.SensorReadings, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadZone allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (sensorReadingL) LoadZone(ctx context.Context, e boil.ContextExecutor, singular bool, maybeSensorReading interface{}, mods queries.Applicator) error {
+	var slice []*SensorReading
+	var object *SensorReading
+
+	if singular {
+		var ok bool
+		object, ok = maybeSensorReading.(*SensorReading)
+		if !ok {
+			object = new(SensorReading)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeSensorReading)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeSensorReading))
+			}
+		}
+	} else {
+		s, ok := maybeSensorReading.(*[]*SensorReading)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeSensorReading)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeSensorReading))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &sensorReadingR{}
+		}
+		args[object.ZoneID] = struct{}{}
+
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &sensorReadingR{}
+			}
+
+			args[obj.ZoneID] = struct{}{}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`zones`),
+		qm.WhereIn(`zones.id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Zone")
+	}
+
+	var resultSlice []*Zone
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Zone")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for zones")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for zones")
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Zone = foreign
+		if foreign.R == nil {
+			foreign.R = &zoneR{}
+		}
+		foreign.R.SensorReadings = append(foreign.R.SensorReadings, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ZoneID == foreign.ID {
+				local.R.Zone = foreign
+				if foreign.R == nil {
+					foreign.R = &zoneR{}
+				}
+				foreign.R.SensorReadings = append(foreign.R.SensorReadings, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// SetFloor of the sensorReading to the related item.
+// Sets o.R.Floor to related.
+// Adds o to related.R.SensorReadings.
+func (o *SensorReading) SetFloor(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Floor) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"sensor_readings\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"floor_id"}),
+		strmangle.WhereClause("\"", "\"", 2, sensorReadingPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID, o.Timestamp}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.FloorID = related.ID
+	if o.R == nil {
+		o.R = &sensorReadingR{
+			Floor: related,
+		}
+	} else {
+		o.R.Floor = related
+	}
+
+	if related.R == nil {
+		related.R = &floorR{
+			SensorReadings: SensorReadingSlice{o},
+		}
+	} else {
+		related.R.SensorReadings = append(related.R.SensorReadings, o)
+	}
+
+	return nil
+}
+
+// SetZone of the sensorReading to the related item.
+// Sets o.R.Zone to related.
+// Adds o to related.R.SensorReadings.
+func (o *SensorReading) SetZone(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Zone) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE \"sensor_readings\" SET %s WHERE %s",
+		strmangle.SetParamNames("\"", "\"", 1, []string{"zone_id"}),
+		strmangle.WhereClause("\"", "\"", 2, sensorReadingPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID, o.Timestamp}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.ZoneID = related.ID
+	if o.R == nil {
+		o.R = &sensorReadingR{
+			Zone: related,
+		}
+	} else {
+		o.R.Zone = related
+	}
+
+	if related.R == nil {
+		related.R = &zoneR{
+			SensorReadings: SensorReadingSlice{o},
+		}
+	} else {
+		related.R.SensorReadings = append(related.R.SensorReadings, o)
+	}
+
+	return nil
+}
+
 // SensorReadings retrieves all the records using an executor.
 func SensorReadings(mods ...qm.QueryMod) sensorReadingQuery {
 	mods = append(mods, qm.From("\"sensor_readings\""))
@@ -347,6 +740,7 @@ func (o *SensorReading) Insert(ctx context.Context, exec boil.ContextExecutor, c
 			sensorReadingColumnsWithoutDefault,
 			nzDefaults,
 		)
+		wl = strmangle.SetComplement(wl, sensorReadingGeneratedColumns)
 
 		cache.valueMapping, err = queries.BindMapping(sensorReadingType, sensorReadingMapping, wl)
 		if err != nil {
@@ -414,6 +808,7 @@ func (o *SensorReading) Update(ctx context.Context, exec boil.ContextExecutor, c
 			sensorReadingAllColumns,
 			sensorReadingPrimaryKeyColumns,
 		)
+		wl = strmangle.SetComplement(wl, sensorReadingGeneratedColumns)
 
 		if !columns.IsWhitelist() {
 			wl = strmangle.SetComplement(wl, []string{"created_at"})
@@ -586,6 +981,9 @@ func (o *SensorReading) Upsert(ctx context.Context, exec boil.ContextExecutor, u
 			sensorReadingAllColumns,
 			sensorReadingPrimaryKeyColumns,
 		)
+
+		insert = strmangle.SetComplement(insert, sensorReadingGeneratedColumns)
+		update = strmangle.SetComplement(update, sensorReadingGeneratedColumns)
 
 		if updateOnConflict && len(update) == 0 {
 			return errors.New("dbmodel: unable to upsert sensor_readings, could not build update column list")

@@ -12,7 +12,7 @@ type IoTDevice struct {
 	Type      string
 	Location  string
 	Floor     int
-	Zone      string
+	Zone      int
 	IsActive  bool
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -26,7 +26,7 @@ type SensorReading struct {
 	DeviceType  string
 	Location    string
 	Floor       int
-	Zone        string
+	Zone        int
 	Temperature float64
 	Humidity    float64
 	CO2         float64
@@ -41,7 +41,7 @@ type IoTDataMessage struct {
 	DeviceType  string    `json:"device_type"`
 	Location    string    `json:"location"`
 	Floor       int       `json:"floor"`
-	Zone        string    `json:"zone"`
+	Zone        int       `json:"zone"`
 	Temperature float64   `json:"temperature"`
 	Humidity    float64   `json:"humidity"`
 	CO2         float64   `json:"co2"`
@@ -54,7 +54,7 @@ type GetReadingsInput struct {
 	DeviceType string
 	Location   string
 	Floor      int
-	Zone       string
+	Zone       int
 	StartTime  time.Time
 	EndTime    time.Time
 	Limit      int

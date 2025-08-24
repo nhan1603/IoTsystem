@@ -4,4 +4,6 @@ DROP INDEX IF EXISTS idx_sensor_readings_zone;
 DROP TABLE IF EXISTS benchmark_metrics;
 DROP TABLE IF EXISTS sensor_readings;
 DROP TABLE IF EXISTS iot_devices; 
+DROP TABLE IF EXISTS zones;
+DROP TABLE IF EXISTS floors;
 DROP TABLE IF EXISTS users;
