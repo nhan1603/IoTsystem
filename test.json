@@ -1,0 +1,4 @@
+{"ts":"2025-08-20T21:13:07.412Z","level":"INFO","component":"producer","event":"run_start","run_id":"20250820T2113Z","BATCH_SIZE":10000,"BATCH_TIMEOUT":"5s","compression":"lz4","partitions":3,"config_fingerprint":"8f2a1c3d"}
+{"ts":"2025-08-20T21:14:02.089Z","level":"INFO","component":"consumer","event":"batch_processed","run_id":"20250820T2113Z","partition":1,"offset_first":982240,"offset_last":992239,"batch_size":10000,"latency_ms":742}
+{"ts":"2025-08-20T21:20:00.001Z","level":"INFO","component":"producer","event":"producer_summary","run_id":"20250820T2113Z","messages_sent":3000000}
+{"ts":"2025-08-20T21:20:01.115Z","level":"INFO","component":"consumer","event":"shutdown","run_id":"20250820T2113Z","last_offsets":{"p0":1002239,"p1":1002239,"p2":1002239},"metrics_flushed":true}

@@ -36,9 +36,9 @@ type SensorReading struct {
 
 // IoTDataMessage represents the Kafka message format for IoT data
 type IoTDataMessage struct {
-	DeviceID    string    `json:"deviceId"`
-	DeviceName  string    `json:"deviceName"`
-	DeviceType  string    `json:"deviceType"`
+	DeviceID    string    `json:"device_id"`
+	DeviceName  string    `json:"device_name"`
+	DeviceType  string    `json:"device_type"`
 	Location    string    `json:"location"`
 	Floor       int       `json:"floor"`
 	Zone        string    `json:"zone"`

@@ -56,14 +56,9 @@ services:
       PG_URL: postgres://postgres:postgres@database:5432/iotsystem-pg?sslmode=disable
       KAFKA_BROKER: "kafka:9092"
       IOT_TOPIC: "iot.sensor"
-      SERVER_ADDR: ":3001"
-      SGT_LOC: "Asia/Singapore"
-      JWT_KEY: "CCO3rTNkzj5ll9JogQW5"
-      PAYPAL_CLIENT_ID: "Afbo85wWbwkEpevvCjTbzgVA2ibewJp6tiGL2Cp5gl561j4oTOPLJNf3zyo28Xrq5Q1_uIdmbEO1aMOK"
-      PAYPAL_SECRET: "EGGFFjj4CLPNgz8mWqgkMbeTnqpg0BjcIlAQ7iEPK9HKoUNblxuNCY5eQv2Xasjv07KCbC0sJTn3qpDH"
-      CYPHER_KEY: "0123456789abcdef"
       BATCH_SIZE: "10000"
       BATCH_TIMEOUT: "5s"
+      SERVER_ADDR: ":3001"
 
   zookeeper:
     container_name: iot-zookeeper
@@ -105,7 +100,7 @@ services:
       kafka-topics --bootstrap-server kafka:9092 --list
 
       echo -e 'Creating kafka topics'
-      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic iot.sensor --replication-factor 1 --partitions 1
+      kafka-topics --bootstrap-server kafka:9092 --create --if-not-exists --topic iot.sensor --replication-factor 1 --partitions 3
 
       echo -e 'Successfully created the following topics:'
       kafka-topics --bootstrap-server kafka:9092 --list
@@ -125,11 +120,6 @@ services:
       KAFKA_BROKER: "kafka:9092"
       IOT_TOPIC: "iot.sensor"
       BATCH_SIZE: "10000"
-  mockery:
-    container_name: mockery
-    image: vektra/mockery:v2.20.0
-    volumes:
-      - ../api:/api
 networks:
   network:
     name: iotsystem

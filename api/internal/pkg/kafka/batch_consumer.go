@@ -117,41 +117,116 @@ func (h batchMessageHandler) ConsumeClaim(sess sarama.ConsumerGroupSession, clai
 	timer := time.NewTimer(h.batchTimeout)
 	defer timer.Stop()
 
-	commitBatch := func() {
-		if len(batch) == 0 {
+	resetTimer := func() {
+		if !timer.Stop() {
+			select {
+			case <-timer.C:
+			default:
+			}
+		}
+		timer.Reset(h.batchTimeout)
+	}
+
+	commitSuccesses := func(succeeded []ConsumerMessage) {
+		for _, m := range succeeded {
+			// Mark only the offsets that truly succeeded
+			sess.MarkOffset(m.ID.Topic, m.ID.Partition, m.ID.Offset+1, "")
+		}
+	}
+
+	processAndCommit := func(b []ConsumerMessage) {
+		if len(b) == 0 {
 			return
 		}
-		ctx := context.Background()
-		log.Printf("[Kafka Consumer] Processing batch of %d messages...\n", len(batch))
-		if err := h.processBatch(ctx, batch); err != nil {
-			log.Printf("batch processing failed: %v", err)
+
+		// respect rebalance/cancel
+		ctx, cancel := context.WithTimeout(sess.Context(), h.batchTimeout) // e.g., 5–10s
+		defer cancel()
+
+		log.Printf("[Kafka Consumer] Processing batch of %d messages...\n", len(b))
+
+		// Try whole batch with retry
+		if err := h.processBatch(ctx, b); err == nil {
+			commitSuccesses(b)
+			sess.Commit()
+			return
 		}
-		// mark offsets
-		for _, msg := range batch {
-			sess.MarkOffset(msg.ID.Topic, msg.ID.Partition, msg.ID.Offset+1, "")
+
+		// Fallback: bisect to isolate bad records
+		succeeded, dropped := h.processWithBisection(sess.Context(), b)
+
+		// Commit successful records to make progress
+		commitSuccesses(succeeded)
+
+		// For drops: log + metrics + commit so the partition doesn't stall
+		for _, d := range dropped {
+			log.Printf("[Kafka Consumer] Dropping poison message at %s[%d]@%d key=%q",
+				d.ID.Topic, d.ID.Partition, d.ID.Offset, d.ID.Key)
+			sess.MarkOffset(d.ID.Topic, d.ID.Partition, d.ID.Offset+1, "")
 		}
-		batch = batch[:0]
+
+		// flush offsets promptly
+		// only commit if we have marked offsets
+		// this avoids committing empty batches which can lead to confusion
+		if len(succeeded)+len(dropped) > 0 {
+			sess.Commit()
+		}
 	}
 
 	for {
 		select {
 		case cm, ok := <-claim.Messages():
 			if !ok {
-				commitBatch()
+				processAndCommit(batch)
 				return nil
 			}
 			// collect message
 			batch = append(batch, toConsumerMessage(cm))
 			if len(batch) >= h.batchSize {
-				commitBatch()
-				timer.Reset(h.batchTimeout)
+				processAndCommit(batch)
+				batch = batch[:0] // reset batch
+				resetTimer()      // reset timer after processing
 			}
 
 		case <-timer.C:
-			commitBatch()
-			timer.Reset(h.batchTimeout)
+			processAndCommit(batch)
+			batch = batch[:0]
+			resetTimer()
+		case <-sess.Context().Done():
+			if len(batch) > 0 {
+				processAndCommit(batch)
+			}
+			return nil
 		}
 	}
+}
+
+// Bisection fallback (no need for a single-message handler)
+func (h batchMessageHandler) processWithBisection(ctx context.Context, batch []ConsumerMessage) (succeeded, dropped []ConsumerMessage) {
+	var ok, bad []ConsumerMessage
+
+	var bisect func([]ConsumerMessage)
+	bisect = func(b []ConsumerMessage) {
+		if len(b) == 0 {
+			return
+		}
+		// try processing the batch
+		if err := h.handler(ctx, b); err == nil {
+			ok = append(ok, b...)
+			return
+		}
+		if len(b) == 1 {
+			// Cannot be processed even alone → drop
+			bad = append(bad, b[0])
+			return
+		}
+		mid := len(b) / 2
+		bisect(b[:mid])
+		bisect(b[mid:])
+	}
+
+	bisect(batch)
+	return ok, bad
 }
 
 func (h batchMessageHandler) processBatch(ctx context.Context, batch []ConsumerMessage) error {

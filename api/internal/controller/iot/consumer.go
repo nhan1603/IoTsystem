@@ -9,6 +9,7 @@ import (
 
 	"github.com/nhan1603/IoTsystem/api/internal/model"
 	"github.com/nhan1603/IoTsystem/api/internal/pkg/kafka"
+	"github.com/nhan1603/IoTsystem/api/internal/repository"
 )
 
 // BenchmarkMetrics tracks performance metrics
@@ -52,16 +53,30 @@ func (c *impl) HandleBatch(ctx context.Context, msgs []kafka.ConsumerMessage) er
 			Humidity:    iotMsg.Humidity,
 			CO2:         iotMsg.CO2,
 			Timestamp:   iotMsg.Timestamp,
-			CreatedAt:   time.Now(),
+			CreatedAt:   start,
 		})
 	}
-	if len(readings) > 0 {
-		c.repo.IoT().BatchInsertReadings(ctx, readings)
-		latency := time.Since(start)
-		c.updateMetrics(len(readings), latency)
-		log.Printf("Processed batch of %d records in %v", len(readings), latency)
-		c.SaveMetrics(ctx)
+
+	if len(readings) == 0 {
+		log.Println("No valid readings to process")
+		return nil
 	}
+
+	// Insert readings using transaction
+	err := c.repo.DoInTx(ctx, func(txRepo repository.Registry) error {
+		return txRepo.IoT().BatchInsertReadings(ctx, readings)
+	})
+
+	if err != nil {
+		log.Printf("Error processing batch: %v", err)
+		return fmt.Errorf("failed to process batch: %w", err)
+	}
+
+	//  record metrics only after commit
+	latency := time.Since(start)
+	c.updateMetrics(len(readings), latency)
+	c.SaveMetrics(ctx)
+	log.Printf("[HandleBatch] Processed batch of %d records in %v", len(readings), latency)
 
 	return nil
 }
@@ -83,6 +98,13 @@ func (c *impl) incrementFailedRecords() {
 	c.metricsMutex.Lock()
 	defer c.metricsMutex.Unlock()
 	c.metrics.FailedRecords++
+}
+
+// addFailedRecords increments the failed records counter
+func (c *impl) addFailedRecords(recordsCount int) {
+	c.metricsMutex.Lock()
+	defer c.metricsMutex.Unlock()
+	c.metrics.FailedRecords += int64(recordsCount)
 }
 
 // GetMetrics returns current benchmark metrics

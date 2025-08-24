@@ -2,6 +2,8 @@ package simulator
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log"
 	"strconv"
 	"sync/atomic"
@@ -36,6 +38,8 @@ func executeSensorSimulation(ctx context.Context, listDevices []model.IoTDevice,
 				// Pick a random device for each message
 				device := listDevices[i%len(listDevices)]
 				reading := generateSensorReading(device)
+				b, _ := json.Marshal(reading)
+				fmt.Println(string(b))
 				_ = sendMessage(ctx, reading, topic, producer)
 				newCount := atomic.AddInt64(&sentCount, 1)
 				if newCount%1000 == 0 {
