@@ -1,0 +1,81 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: iotsystem
+    environment: development
+
+rule_files:
+  - "rules/*.yml"
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # IoT API Server
+  - job_name: "iot-api"
+    static_configs:
+      - targets: ["server:3001"]
+    metrics_path: "/metrics"
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # IoT Simulator
+  - job_name: "iot-simulator"
+    static_configs:
+      - targets: ["simulator:3001"]
+    metrics_path: "/metrics"
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # Node Exporter (Host metrics)
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+    scrape_interval: 15s
+
+  # cAdvisor (Container metrics)
+  - job_name: "cadvisor"
+    static_configs:
+      - targets: ["cadvisor:8080"]
+    scrape_interval: 15s
+
+  # PostgreSQL Exporter (optional - requires main system database)
+  # Uncomment when running with database profile: --profile database
+  # - job_name: 'postgres-exporter'
+  #   static_configs:
+  #     - targets: ['postgres-exporter:9187']
+  #   scrape_interval: 15s
+
+  # Kafka Exporter (optional - requires main system Kafka)
+  # Uncomment when running with kafka profile: --profile kafka
+  # - job_name: 'kafka-exporter'
+  #   static_configs:
+  #     - targets: ['kafka-exporter:9308']
+  #   scrape_interval: 15s
+
+  # Grafana
+  - job_name: "grafana"
+    static_configs:
+      - targets: ["grafana:3000"]
+    scrape_interval: 30s
+    metrics_path: "/metrics"
+
+  # Docker containers (via cAdvisor)
+  - job_name: "docker-containers"
+    static_configs:
+      - targets: ["cadvisor:8080"]
+    metrics_path: "/metrics"
+    scrape_interval: 15s
+    params:
+      container: ["api", "simulator", "database", "kafka", "zookeeper"]
+
+  # IoT System Health Check
+  - job_name: "iot-health"
+    static_configs:
+      - targets: ["server:3001"]
+    metrics_path: "/health"
+    scrape_interval: 30s
+    scrape_timeout: 10s

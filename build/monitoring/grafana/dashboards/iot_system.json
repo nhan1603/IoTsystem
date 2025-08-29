@@ -1,0 +1,81 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "graphTooltip": 0,
+  "links": [],
+  "panels": [
+    {
+      "title": "Message Processing Rate",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "rate(iot_messages_processed_total{status=\"success\"}[1m])",
+          "legendFormat": "Success Rate"
+        },
+        {
+          "expr": "rate(iot_messages_processed_total{status=\"error\"}[1m])",
+          "legendFormat": "Error Rate"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "ops",
+          "label": "Messages/sec"
+        }
+      ]
+    },
+    {
+      "title": "Batch Processing Duration",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(iot_batch_processing_duration_seconds_bucket[1m]))",
+          "legendFormat": "p95"
+        }
+      ],
+      "yaxes": [
+        {
+          "format": "s",
+          "label": "Duration"
+        }
+      ]
+    },
+    {
+      "title": "Database Operation Latency",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(iot_db_operation_duration_seconds_bucket[1m])) by (operation, le))",
+          "legendFormat": "{{operation}} p95"
+        }
+      ]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 27,
+  "title": "IoT System Metrics",
+  "version": 1
+}

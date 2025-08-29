@@ -1,0 +1,40 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "title": "Message Processing Rate",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [
+        {
+          "expr": "sum(rate(iot_messages_processed_total{status=\"success\"}[1m])) by (device_id)",
+          "legendFormat": "{{device_id}}"
+        }
+      ]
+    },
+    {
+      "title": "Sensor Readings",
+      "type": "graph",
+      "datasource": "Prometheus",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "targets": [
+        {
+          "expr": "iot_sensor_reading",
+          "legendFormat": "{{device_id}} - {{type}}"
+        }
+      ]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 27,
+  "title": "IoT System Metrics",
+  "uid": "iot_metrics",
+  "version": 1
+}

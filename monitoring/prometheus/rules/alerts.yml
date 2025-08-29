@@ -1,0 +1,64 @@
+# Alert rules for IoT System
+# Note: Alertmanager is not implemented in this setup
+# These rules are kept for reference and can be enabled when Alertmanager is added
+
+groups:
+  - name: iot-system-alerts
+    rules:
+      # Example alert rules (disabled)
+      # Uncomment and configure when Alertmanager is implemented
+
+      # High CPU Usage
+      # - alert: HighCPUUsage
+      #   expr: 100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+      #   for: 5m
+      #   labels:
+      #     severity: warning
+      #   annotations:
+      #     summary: "High CPU usage on {{ $labels.instance }}"
+      #     description: "CPU usage is above 80% for more than 5 minutes on {{ $labels.instance }}"
+
+      # High Memory Usage
+      # - alert: HighMemoryUsage
+      #   expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+      #   for: 5m
+      #   labels:
+      #     severity: warning
+      #   annotations:
+      #     summary: "High memory usage on {{ $labels.instance }}"
+      #     description: "Memory usage is above 85% for more than 5 minutes on {{ $labels.instance }}"
+
+      # IoT API Server Down
+      # - alert: IoTServerDown
+      #   expr: up{job="iot-api"} == 0
+      #   for: 1m
+      #   labels:
+      #     severity: critical
+      #   annotations:
+      #     summary: "IoT API server is down"
+      #     description: "IoT API server has been down for more than 1 minute"
+
+      # High IoT Message Processing Latency
+      # - alert: HighIOTProcessingLatency
+      #   expr: histogram_quantile(0.95, rate(iot_batch_processing_duration_seconds_bucket[5m])) > 5
+      #   for: 5m
+      #   labels:
+      #     severity: warning
+      #   annotations:
+      #     summary: "High IoT message processing latency"
+      #     description: "95th percentile of IoT batch processing time is above 5 seconds"
+
+  - name: iot-business-alerts
+    rules:
+      # Example business alert rules (disabled)
+      # Uncomment and configure when Alertmanager is implemented
+
+      # No IoT Messages Received
+      # - alert: NoIOTMessagesReceived
+      #   expr: rate(iot_messages_received_total[10m]) == 0
+      #   for: 10m
+      #   labels:
+      #     severity: critical
+      #   annotations:
+      #     summary: "No IoT messages received"
+      #     description: "No IoT messages have been received in the last 10 minutes"

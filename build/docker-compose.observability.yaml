@@ -1,0 +1,251 @@
+version: "3.8"
+
+services:
+  # Prometheus for metrics collection
+  prometheus:
+    container_name: iot-prometheus
+    image: prom/prometheus:v2.48.1
+    restart: always
+    networks:
+      - network
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--storage.tsdb.retention.time=200h"
+      - "--web.enable-lifecycle"
+      - "--web.enable-admin-api"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:9090/-/healthy",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Grafana for visualization
+  grafana:
+    container_name: iot-grafana
+    image: grafana/grafana:10.2.3
+    restart: always
+    networks:
+      - network
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Node Exporter for host metrics
+  node-exporter:
+    container_name: iot-node-exporter
+    image: prom/node-exporter:v1.7.0
+    restart: always
+    networks:
+      - network
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.rootfs=/rootfs"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:9100/metrics",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # cAdvisor for container metrics
+  cadvisor:
+    container_name: iot-cadvisor
+    image: gcr.io/cadvisor/cadvisor:v0.47.2
+    restart: always
+    networks:
+      - network
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/healthz",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL Exporter for database metrics (optional - requires main system database)
+  postgres-exporter:
+    container_name: iot-postgres-exporter
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    restart: always
+    networks:
+      - network
+    ports:
+      - "9187:9187"
+    environment:
+      - DATA_SOURCE_NAME=postgresql://postgres:postgres@database:5432/iotsystem-pg?sslmode=disable
+    profiles:
+      - database
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:9187/metrics",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Kafka Exporter for Kafka metrics (optional - requires main system Kafka)
+  kafka-exporter:
+    container_name: iot-kafka-exporter
+    image: danielqsj/kafka-exporter:v1.7.0
+    restart: always
+    networks:
+      - network
+    ports:
+      - "9308:9308"
+    command:
+      - "--kafka.server=kafka:9092"
+      - "--web.listen-address=:9308"
+      - "--log.level=info"
+    profiles:
+      - kafka
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:9308/metrics",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Jaeger for distributed tracing (optional)
+  jaeger:
+    container_name: iot-jaeger
+    image: jaegertracing/all-in-one:1.53
+    restart: always
+    networks:
+      - network
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    profiles:
+      - tracing
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:16686/api/services",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Loki for log aggregation (optional)
+  loki:
+    container_name: iot-loki
+    image: grafana/loki:2.9.3
+    restart: always
+    networks:
+      - network
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./monitoring/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    profiles:
+      - logging
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:3100/ready",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  network:
+    name: iotsystem
+    external: true
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  loki_data:

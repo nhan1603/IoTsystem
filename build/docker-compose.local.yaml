@@ -68,7 +68,7 @@ services:
       PG_URL: postgres://postgres:postgres@database:5432/iotsystem-pg?sslmode=disable
       KAFKA_BROKER: "kafka:9092"
       IOT_TOPIC: "iot.sensor"
-      BATCH_SIZE: "10000"
+      BATCH_SIZE: "100"
       BATCH_TIMEOUT: "5s"
       SERVER_ADDR: ":3001"
 
@@ -131,7 +131,7 @@ services:
       PG_URL: postgres://postgres:postgres@database:5432/iotsystem-pg?sslmode=disable
       KAFKA_BROKER: "kafka:9092"
       IOT_TOPIC: "iot.sensor"
-      BATCH_SIZE: "10000"
+      BATCH_SIZE: "100"
 networks:
   network:
     name: iotsystem
