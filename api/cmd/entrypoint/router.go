@@ -17,6 +17,7 @@ import (
 	"github.com/nhan1603/IoTsystem/api/internal/pkg/env"
 	"github.com/nhan1603/IoTsystem/api/internal/pkg/kafka"
 	"github.com/nhan1603/IoTsystem/api/internal/pkg/runner"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type router struct {
@@ -69,6 +70,10 @@ func (rtr router) public(r chi.Router) {
 	r.Group(func(r chi.Router) {
 		r.Get(prefix+"/ping", func(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte("OK"))
+		})
+
+		r.Get("/metrics", func(w http.ResponseWriter, r *http.Request) {
+			promhttp.Handler().ServeHTTP(w, r)
 		})
 	})
 

@@ -9,6 +9,7 @@ import (
 
 	"github.com/nhan1603/IoTsystem/api/internal/model"
 	"github.com/nhan1603/IoTsystem/api/internal/pkg/kafka"
+	"github.com/nhan1603/IoTsystem/api/internal/pkg/obsmetrics"
 	"github.com/nhan1603/IoTsystem/api/internal/repository"
 )
 
@@ -35,6 +36,8 @@ func (c *impl) Stop() {
 func (c *impl) HandleBatch(ctx context.Context, msgs []kafka.ConsumerMessage) error {
 	var readings []model.SensorReading
 	start := time.Now()
+	obsmetrics.BatchSize.Set(float64(len(msgs)))
+
 	for _, msg := range msgs {
 		var iotMsg model.IoTDataMessage
 		if err := json.Unmarshal(msg.Value, &iotMsg); err != nil {
@@ -55,6 +58,13 @@ func (c *impl) HandleBatch(ctx context.Context, msgs []kafka.ConsumerMessage) er
 			Timestamp:   iotMsg.Timestamp,
 			CreatedAt:   start,
 		})
+
+		// Record sensor readings
+		obsmetrics.SensorReadings.WithLabelValues(iotMsg.DeviceID, "temperature").Set(iotMsg.Temperature)
+		obsmetrics.SensorReadings.WithLabelValues(iotMsg.DeviceID, "humidity").Set(iotMsg.Humidity)
+		obsmetrics.SensorReadings.WithLabelValues(iotMsg.DeviceID, "co2").Set(iotMsg.CO2)
+
+		obsmetrics.MessagesProcessed.WithLabelValues(iotMsg.DeviceID, "success").Inc()
 	}
 
 	if len(readings) == 0 {
@@ -72,12 +82,14 @@ func (c *impl) HandleBatch(ctx context.Context, msgs []kafka.ConsumerMessage) er
 		return fmt.Errorf("failed to process batch: %w", err)
 	}
 
-	//  record metrics only after commit
+	// Record metrics only after commit
 	latency := time.Since(start)
 	c.updateMetrics(len(readings), latency)
 	c.SaveMetrics(ctx)
-	log.Printf("[HandleBatch] Processed batch of %d records in %v", len(readings), latency)
 
+	obsmetrics.ProcessingLatency.WithLabelValues("batch").Observe(time.Since(start).Seconds())
+
+	log.Printf("[HandleBatch] Processed batch of %d records in %v", len(readings), latency)
 	return nil
 }
 

@@ -2,6 +2,7 @@
 # Env Variables
 # ----------------------------
 DOCKER_COMPOSE_FILE ?= build/docker-compose.local.yaml
+DOCKER_COMPOSE_OBSERVABILITY ?= build/docker-compose.observability.yaml
 DATABASE_CONTAINER ?= database
 API_CONTAINER ?= server
 PROJECT_NAME ?= iotsystem
@@ -83,3 +84,66 @@ kafka-topic:
 # ----------------------------
 api-simulator-run:
 	docker compose -f ${DOCKER_COMPOSE_FILE} up -d simulator
+
+# ----------------------------
+# Observability
+# ----------------------------
+observability-up:
+	@echo Starting observability stack...
+	docker-compose -f ${DOCKER_COMPOSE_OBSERVABILITY} -p=${PROJECT_NAME} up -d
+	@echo Observability stack started!
+
+observability-down:
+	@echo Stopping observability stack...
+	docker-compose -f ${DOCKER_COMPOSE_OBSERVABILITY} -p=${PROJECT_NAME} down
+	@echo Observability stack stopped!
+
+observability-logs:
+	docker-compose -f ${DOCKER_COMPOSE_OBSERVABILITY} -p=${PROJECT_NAME} logs -f
+
+# Start observability with database exporter (requires main system database)
+observability-with-db:
+	@echo Starting observability stack with database exporter...
+	docker-compose -f ${DOCKER_COMPOSE_OBSERVABILITY} -p=${PROJECT_NAME} --profile database up -d
+	@echo Observability stack with database exporter started!
+
+# Start observability with Kafka exporter (requires main system Kafka)
+observability-with-kafka:
+	@echo Starting observability stack with Kafka exporter...
+	docker-compose -f ${DOCKER_COMPOSE_OBSERVABILITY} -p=${PROJECT_NAME} --profile kafka up -d
+	@echo Observability stack with Kafka exporter started!
+
+# Start observability with both database and Kafka exporters
+observability-with-all:
+	@echo Starting observability stack with all exporters...
+	docker-compose -f ${DOCKER_COMPOSE_OBSERVABILITY} -p=${PROJECT_NAME} --profile database --profile kafka up -d
+	@echo Observability stack with all exporters started!
+
+# Start full system with observability
+run-with-monitoring: setup observability-up api-create
+
+# Start full system with observability and database exporter
+run-with-monitoring-db: setup observability-with-db api-create
+
+# Start full system with observability and all exporters
+run-with-monitoring-all: setup observability-with-all api-create
+
+# Start only monitoring services
+monitoring-only: observability-up
+
+# Stop monitoring services
+monitoring-stop: observability-down
+
+# View monitoring URLs
+monitoring-urls:
+	@echo "=== IoT System Monitoring URLs ==="
+	@echo "Grafana Dashboard: http://localhost:3000 (admin/admin)"
+	@echo "Prometheus: http://localhost:9090"
+	@echo "cAdvisor (Container Metrics): http://localhost:8080"
+	@echo "Node Exporter (Host Metrics): http://localhost:9100/metrics"
+	@echo "IoT API Metrics: http://localhost:3001/metrics"
+	@echo ""
+	@echo "Optional Exporters (when enabled):"
+	@echo "PostgreSQL Exporter: http://localhost:9187/metrics"
+	@echo "Kafka Exporter: http://localhost:9308/metrics"
+	@echo "=================================="
