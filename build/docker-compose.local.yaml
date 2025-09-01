@@ -71,7 +71,13 @@ services:
       BATCH_SIZE: "100"
       BATCH_TIMEOUT: "5s"
       SERVER_ADDR: ":3001"
-      DB_BACKEND: "postgres"
+      DB_BACKEND: "cassandra"
+      # Cassandra config
+      CASSANDRA_HOSTS: "cass1:9042"
+      CASSANDRA_KEYSPACE: "iotsystem"
+      CASSANDRA_USERNAME: "cassandra"
+      CASSANDRA_PASSWORD: "cassandra"
+      CASSANDRA_CONSISTENCY: "quorum"
 
   zookeeper:
     container_name: iot-zookeeper
@@ -133,7 +139,13 @@ services:
       KAFKA_BROKER: "kafka:9092"
       IOT_TOPIC: "iot.sensor"
       BATCH_SIZE: "100"
-      DB_BACKEND: "postgres"
+      DB_BACKEND: "cassandra"
+      # Cassandra config
+      CASSANDRA_HOSTS: "cass1:9042"
+      CASSANDRA_KEYSPACE: "iotsystem"
+      CASSANDRA_USERNAME: "cassandra"
+      CASSANDRA_PASSWORD: "cassandra"
+      CASSANDRA_CONSISTENCY: "quorum"
 
   cassandra:
     image: cassandra:5.0
@@ -143,8 +155,17 @@ services:
       - CASSANDRA_DC=datacenter1
       - CASSANDRA_ENDPOINT_SNITCH=SimpleSnitch
       - CASSANDRA_SEEDS=cass1
+       # Add authentication
+      - CASSANDRA_AUTHENTICATOR=PasswordAuthenticator
+      - CASSANDRA_PASSWORD_SEEDER=yes
+      - CASSANDRA_USER=cassandra
+      - CASSANDRA_PASSWORD=cassandra
+      # Performance tuning
       - MAX_HEAP_SIZE=1G
       - HEAP_NEWSIZE=256M
+      - CASSANDRA_CONCURRENT_READS=32
+      - CASSANDRA_CONCURRENT_WRITES=32
+      - CASSANDRA_CONCURRENT_COUNTER_WRITES=32
     ports:
       - "9042:9042"
     networks:

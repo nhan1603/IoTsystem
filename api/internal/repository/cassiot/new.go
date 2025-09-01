@@ -23,34 +23,50 @@ func NewCassandra(session gocqlx.Session) iotsystem.Repository {
 }
 
 func (c *cassandraImpl) GetDevices(ctx context.Context) ([]model.IoTDevice, error) {
-	var devices []model.IoTDevice
+	// Add context timeout
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 
+	// Only select active devices and add pagination
 	stmt, names := qb.Select("iot_devices").
 		Columns("id", "device_id", "name", "type", "location", "floor_id", "zone_id",
-			"is_active", "created_at", "updated_at").
+						"is_active", "created_at", "updated_at").
+		Where(qb.Eq("is_active")). // Only get active devices
+		AllowFiltering().          // Required for non-partition key filters
 		ToCql()
 
-	q := c.session.Query(stmt, names)
+	q := c.session.Query(stmt, names).
+		BindMap(qb.M{"is_active": true}).
+		WithContext(ctx)
 	defer q.Release()
 
-	var results []map[string]interface{}
-	if err := q.SelectRelease(&results); err != nil {
-		return nil, fmt.Errorf("failed to query devices: %w", err)
+	// Use scanner for better memory efficiency
+	scanner := q.Iter().Scanner()
+	var devices []model.IoTDevice
+
+	for scanner.Next() {
+		var device model.IoTDevice
+		var id gocql.UUID // Use UUID instead of int64
+
+		err := scanner.Scan(&id,
+			&device.DeviceID,
+			&device.Name,
+			&device.Type,
+			&device.Location,
+			&device.Floor,
+			&device.Zone,
+			&device.IsActive,
+			&device.CreatedAt,
+			&device.UpdatedAt)
+
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan device: %w", err)
+		}
+		devices = append(devices, device)
 	}
 
-	for _, row := range results {
-		devices = append(devices, model.IoTDevice{
-			ID:        row["id"].(int64),
-			DeviceID:  row["device_id"].(string),
-			Name:      row["name"].(string),
-			Type:      row["type"].(string),
-			Location:  row["location"].(string),
-			Floor:     row["floor_id"].(int),
-			Zone:      row["zone_id"].(int),
-			IsActive:  row["is_active"].(bool),
-			CreatedAt: row["created_at"].(time.Time),
-			UpdatedAt: row["updated_at"].(time.Time),
-		})
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("error during scan: %w", err)
 	}
 
 	return devices, nil
@@ -217,11 +233,12 @@ func (c *cassandraImpl) SaveBenchmarkMetrics(ctx context.Context, metrics model.
 		"database_type":     metrics.DatabaseType,
 		"created_at":        time.Now(),
 	})
-	defer q.Release()
 
-	if err := q.ExecRelease(); err != nil {
+	if err := q.Exec(); err != nil {
 		return fmt.Errorf("failed to save benchmark metrics: %w", err)
 	}
+
+	q.Release()
 
 	return nil
 }

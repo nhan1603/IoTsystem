@@ -8,7 +8,6 @@ import (
 	"github.com/nhan1603/IoTsystem/api/internal/controller/simulator"
 	"github.com/nhan1603/IoTsystem/api/internal/pkg/kafka"
 	"github.com/nhan1603/IoTsystem/api/internal/repository"
-	"github.com/nhan1603/IoTsystem/api/internal/repository/generator"
 )
 
 func main() {
@@ -22,17 +21,15 @@ func main() {
 	}
 	defer cleanup()
 
+	log.Println("Connected to database successfully")
+
 	// Initial producer kafka
 	producer, err := kafka.NewSyncProducer(ctx, os.Getenv("KAFKA_BROKER"))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Initial snowflake generator
-	if err := generator.InitSnowflakeGenerators(); err != nil {
-		log.Printf("Error when init snowflake, %v", err)
-		return
-	}
+	log.Println("Connected to Kafka successfully")
 
 	// Initial Simulate
 	ctrl := simulator.New(

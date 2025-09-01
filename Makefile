@@ -81,6 +81,8 @@ kafka:
 kafka-topic:
 	docker compose -f ${DOCKER_COMPOSE_FILE} up -d kafka-topic
 
+infra: zookeeper kafka kafka-topic
+
 # ----------------------------
 # Alternate DB
 # ----------------------------
@@ -134,6 +136,13 @@ cass-drop:
 	@docker-compose -f ${DOCKER_COMPOSE_FILE} -p=${PROJECT_NAME} exec -T ${CASSANDRA_CONTAINER} cqlsh -e "\
 		DROP KEYSPACE IF EXISTS iotsystem;"
 	@echo "Keyspace dropped successfully!"
+
+cass-testing:
+	@echo "Counting Cassandra migration..."
+	@docker-compose -f ${DOCKER_COMPOSE_FILE} -p=${PROJECT_NAME} exec -T ${CASSANDRA_CONTAINER} cqlsh -e "\
+		SELECT COUNT(*) FROM iotsystem.sensor_readings; \
+		SELECT processed_records FROM iotsystem.benchmark_metrics;"
+	@echo "Counting complete!"
 
 # ----------------------------
 # simulator
