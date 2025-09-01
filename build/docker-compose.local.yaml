@@ -135,7 +135,7 @@ services:
       BATCH_SIZE: "100"
       DB_BACKEND: "postgres"
 
-  cassandra1:
+  cassandra:
     image: cassandra:5.0
     container_name: cass1
     environment:
@@ -150,6 +150,8 @@ services:
     networks:
       - network
     volumes:
+      - ./api/data/cassandra/cassandra.cql:/docker-entrypoint-initdb.d/cassandra.cql
+      - ./api/data/cassandra/seed.cql:/docker-entrypoint-initdb.d/seed.cql
       - cassandra_data:/var/lib/cassandra
     healthcheck:
       test: ["CMD-SHELL", "cqlsh -e 'DESCRIBE CLUSTER' 127.0.0.1 9042 || exit 1"]
