@@ -71,6 +71,7 @@ services:
       BATCH_SIZE: "100"
       BATCH_TIMEOUT: "5s"
       SERVER_ADDR: ":3001"
+      DB_BACKEND: "postgres"
 
   zookeeper:
     container_name: iot-zookeeper
@@ -132,9 +133,34 @@ services:
       KAFKA_BROKER: "kafka:9092"
       IOT_TOPIC: "iot.sensor"
       BATCH_SIZE: "100"
+      DB_BACKEND: "postgres"
+
+  cassandra1:
+    image: cassandra:5.0
+    container_name: cass1
+    environment:
+      - CASSANDRA_CLUSTER_NAME=iot_cluster
+      - CASSANDRA_DC=datacenter1
+      - CASSANDRA_ENDPOINT_SNITCH=SimpleSnitch
+      - CASSANDRA_SEEDS=cass1
+      - MAX_HEAP_SIZE=1G
+      - HEAP_NEWSIZE=256M
+    ports:
+      - "9042:9042"
+    networks:
+      - network
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh -e 'DESCRIBE CLUSTER' 127.0.0.1 9042 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
 networks:
   network:
     name: iotsystem
 
 volumes:
   data:
+  cassandra_data:

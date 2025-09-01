@@ -4,6 +4,7 @@
 DOCKER_COMPOSE_FILE ?= build/docker-compose.local.yaml
 DOCKER_COMPOSE_OBSERVABILITY ?= build/docker-compose.observability.yaml
 DATABASE_CONTAINER ?= database
+CASSANDRA_CONTAINER ?= cassandra
 API_CONTAINER ?= server
 PROJECT_NAME ?= iotsystem
 
@@ -78,6 +79,15 @@ kafka:
 
 kafka-topic:
 	docker compose -f ${DOCKER_COMPOSE_FILE} up -d kafka-topic
+
+# ----------------------------
+# Alternate DB
+# ----------------------------
+## cass-create: starts Cassandra container
+cass-create:
+	@echo Starting Cassandra database container
+	docker-compose -f ${DOCKER_COMPOSE_FILE} -p=${PROJECT_NAME} up -d ${CASSANDRA_CONTAINER}
+	@echo Cassandra container started!
 
 # ----------------------------
 # simulator

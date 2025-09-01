@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/nhan1603/IoTsystem/api/internal/appconfig/db/pg"
 	"github.com/nhan1603/IoTsystem/api/internal/controller/simulator"
 	"github.com/nhan1603/IoTsystem/api/internal/pkg/kafka"
 	"github.com/nhan1603/IoTsystem/api/internal/repository"
@@ -16,12 +15,12 @@ func main() {
 	ctx := context.Background()
 
 	// Initial DB connection
-	conn, err := pg.Connect(os.Getenv("PG_URL"))
+	cfg := repository.FromEnv()
+	repo, cleanup, err := repository.NewFromConfig(ctx, cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	defer conn.Close()
+	defer cleanup()
 
 	// Initial producer kafka
 	producer, err := kafka.NewSyncProducer(ctx, os.Getenv("KAFKA_BROKER"))
@@ -37,7 +36,7 @@ func main() {
 
 	// Initial Simulate
 	ctrl := simulator.New(
-		repository.New(conn),
+		repo,
 		producer,
 		os.Getenv("IOT_TOPIC"),
 	)

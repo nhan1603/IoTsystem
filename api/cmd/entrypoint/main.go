@@ -2,11 +2,8 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"log"
-	"os"
 
-	"github.com/nhan1603/IoTsystem/api/internal/appconfig/db/pg"
 	"github.com/nhan1603/IoTsystem/api/internal/appconfig/httpserver"
 	"github.com/nhan1603/IoTsystem/api/internal/appconfig/iam"
 	"github.com/nhan1603/IoTsystem/api/internal/controller/auth"
@@ -34,11 +31,14 @@ func main() {
 	}
 
 	// Initial DB connection
-	conn, err := pg.Connect(os.Getenv("PG_URL"))
+	cfg := repository.FromEnv()
+	repo, cleanup, err := repository.NewFromConfig(ctx, cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer conn.Close()
+	defer cleanup()
+
+	log.Println("Connected to DB successfully")
 
 	// Initial snowflake generator
 	if err := generator.InitSnowflakeGenerators(); err != nil {
@@ -46,7 +46,7 @@ func main() {
 	}
 
 	// Initial router
-	rtr, err := initRouter(ctx, conn)
+	rtr, err := initRouter(ctx, repo)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -60,9 +60,8 @@ func main() {
 
 func initRouter(
 	ctx context.Context,
-	db *sql.DB,
+	repo repository.Registry,
 ) (router, error) {
-	repo := repository.New(db)
 
 	return router{
 		ctx:      ctx,
