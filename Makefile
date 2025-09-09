@@ -87,14 +87,14 @@ infra: zookeeper kafka kafka-topic
 # Alternate DB
 # ----------------------------
 ## cass-create: starts Cassandra container
+cass-wait:
+	@echo "Waiting for Cassandra to be ready..."
+	@powershell -NoProfile -Command "$$attempts = 60; while ($$attempts -gt 0) { try { $$null = docker-compose -f '${DOCKER_COMPOSE_FILE}' -p '${PROJECT_NAME}' exec -T ${CASSANDRA_CONTAINER} cqlsh -e 'SELECT NOW() FROM system.local;'; if ($$?) { Write-Host 'Cassandra is ready!'; exit 0; }} catch { Write-Host \"Waiting for Cassandra... $$attempts attempts remaining...\"; Start-Sleep -Seconds 1; $$attempts--; }}; if ($$attempts -eq 0) { Write-Host 'Cassandra failed to start!'; exit 1; }"
+
 cass-create:
 	@echo Starting Cassandra database container
 	docker-compose -f ${DOCKER_COMPOSE_FILE} -p=${PROJECT_NAME} up -d ${CASSANDRA_CONTAINER}
 	@echo Cassandra container started!
-
-cass-wait:
-	@echo "Waiting for Cassandra to be ready..."
-	@powershell -NoProfile -Command "$$attempts = 60; while ($$attempts -gt 0) { try { $$null = docker-compose -f '${DOCKER_COMPOSE_FILE}' -p '${PROJECT_NAME}' exec -T ${CASSANDRA_CONTAINER} cqlsh -e 'SELECT NOW() FROM system.local;'; if ($$?) { Write-Host 'Cassandra is ready!'; exit 0; }} catch { Write-Host \"Waiting for Cassandra... $$attempts attempts remaining...\"; Start-Sleep -Seconds 1; $$attempts--; }}; if ($$attempts -eq 0) { Write-Host 'Cassandra failed to start!'; exit 1; }"
 
 cass-copy-scripts:
 	@echo "Copying CQL scripts to container..."
@@ -102,16 +102,16 @@ cass-copy-scripts:
 	docker cp api/data/cassandra/0002_seed_data.up.cql ${CASS_CONTAINTER_NAME}:/seed.cql
 	@echo "Scripts copied successfully!"
 
-cass-cleanup-scripts:
-	@echo "Cleaning up CQL scripts from container..."
-	docker-compose -f ${DOCKER_COMPOSE_FILE} -p=${PROJECT_NAME} exec -T ${CASSANDRA_CONTAINER} rm -f /schema.cql /seed.cql
-	@echo "Scripts cleaned up successfully!"
-
 ## cass-migrate: executes Cassandra schema migrations
 cass-migrate: cass-wait cass-copy-scripts
 	@echo "Applying Cassandra schema..."
 	docker-compose -f ${DOCKER_COMPOSE_FILE} -p=${PROJECT_NAME} exec -T ${CASSANDRA_CONTAINER} cqlsh -f /schema.cql
 	@echo "Schema applied successfully!"
+
+cass-cleanup-scripts:
+	@echo "Cleaning up CQL scripts from container..."
+	docker-compose -f ${DOCKER_COMPOSE_FILE} -p=${PROJECT_NAME} exec -T ${CASSANDRA_CONTAINER} rm -f /schema.cql /seed.cql
+	@echo "Scripts cleaned up successfully!"
 
 ## cass-seed: seeds initial data into Cassandra
 cass-seed: cass-wait cass-copy-scripts

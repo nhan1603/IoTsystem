@@ -22,7 +22,7 @@ type Config struct {
 	Backend Backend
 
 	// Postgres
-	PGURL string // e.g. postgres://postgres:postgres@localhost:5432/iotsystem-pg?sslmode=disable
+	PGURL string
 
 	// Cassandra
 	CassHosts       []string // ["127.0.0.1"]

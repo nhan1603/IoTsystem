@@ -29,9 +29,9 @@ func (i impl) Simulate(ctx context.Context) {
 // executeSensorSimulation sends random sensor data at intervals for each device
 func executeSensorSimulation(ctx context.Context, listDevices []model.IoTDevice, interval time.Duration, topic string, producer *kafka.SyncProducer) {
 	var sentCount int64
-	ticker := time.NewTicker(interval)
-	batchSize, _ := strconv.Atoi(env.GetwithDefault("BATCH_SIZE", "100"))
+	batchSize, _ := strconv.Atoi(env.GetwithDefault("PRODUCER_RATE", "100"))
 	generate := func() {
+		ticker := time.NewTicker(interval)
 		for range ticker.C {
 			for i := 0; i < batchSize; i++ {
 				// Pick a random device for each message
@@ -47,7 +47,7 @@ func executeSensorSimulation(ctx context.Context, listDevices []model.IoTDevice,
 			}
 		}
 	}
-	for i := 0; i < 2; i++ {
+	for i := 0; i < len(listDevices); i++ {
 		go generate()
 	}
 }
