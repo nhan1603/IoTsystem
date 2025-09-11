@@ -80,7 +80,7 @@ func (c *cassandraImpl) BatchInsertReadings(ctx context.Context, readings []mode
 	stmt, _ := qb.Insert("sensor_readings").
 		Columns("id", "device_id", "device_name", "device_type", "location",
 			"floor_id", "zone_id", "temperature", "humidity", "co2", "timestamp",
-			"created_at", "heat_index", "air_quality_index").
+			"created_at", "heat_index", "air_quality_index", "durable_write_ts").
 		ToCql()
 
 	for _, reading := range readings {
@@ -116,6 +116,7 @@ func (c *cassandraImpl) BatchInsertReadings(ctx context.Context, readings []mode
 			time.Now(),
 			heatIndex,
 			airQualityIndex,
+			`toTimestamp(now())`,
 		)
 	}
 

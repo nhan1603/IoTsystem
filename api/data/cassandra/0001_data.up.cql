@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS sensor_readings (
     // Add computed columns
     heat_index double,      // Storing pre-computed heat index
     air_quality_index int,  // Storing pre-computed air quality index
+    durable_write_ts timestamp,
     PRIMARY KEY ((device_id), timestamp)
 ) WITH CLUSTERING ORDER BY (timestamp DESC);
 

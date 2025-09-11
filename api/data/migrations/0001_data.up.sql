@@ -62,6 +62,7 @@ CREATE TABLE sensor_readings
     co2 DOUBLE PRECISION NOT NULL DEFAULT 0.0,
     timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    durable_write_ts TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
     PRIMARY KEY (id, timestamp),
     -- Idempotency key for exactly-once-ish writes:
     CONSTRAINT uq_device_ts UNIQUE (device_id, "timestamp")

@@ -36,6 +36,7 @@ type SensorReading struct {
 	Co2             float64      `boil:"co2" json:"co2" toml:"co2" yaml:"co2"`
 	Timestamp       time.Time    `boil:"timestamp" json:"timestamp" toml:"timestamp" yaml:"timestamp"`
 	CreatedAt       null.Time    `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
+	DurableWriteTS  time.Time    `boil:"durable_write_ts" json:"durable_write_ts" toml:"durable_write_ts" yaml:"durable_write_ts"`
 	HeatIndex       null.Float64 `boil:"heat_index" json:"heat_index,omitempty" toml:"heat_index" yaml:"heat_index,omitempty"`
 	AirQualityIndex null.Int     `boil:"air_quality_index" json:"air_quality_index,omitempty" toml:"air_quality_index" yaml:"air_quality_index,omitempty"`
 
@@ -56,6 +57,7 @@ var SensorReadingColumns = struct {
 	Co2             string
 	Timestamp       string
 	CreatedAt       string
+	DurableWriteTS  string
 	HeatIndex       string
 	AirQualityIndex string
 }{
@@ -71,6 +73,7 @@ var SensorReadingColumns = struct {
 	Co2:             "co2",
 	Timestamp:       "timestamp",
 	CreatedAt:       "created_at",
+	DurableWriteTS:  "durable_write_ts",
 	HeatIndex:       "heat_index",
 	AirQualityIndex: "air_quality_index",
 }
@@ -88,6 +91,7 @@ var SensorReadingTableColumns = struct {
 	Co2             string
 	Timestamp       string
 	CreatedAt       string
+	DurableWriteTS  string
 	HeatIndex       string
 	AirQualityIndex string
 }{
@@ -103,6 +107,7 @@ var SensorReadingTableColumns = struct {
 	Co2:             "sensor_readings.co2",
 	Timestamp:       "sensor_readings.timestamp",
 	CreatedAt:       "sensor_readings.created_at",
+	DurableWriteTS:  "sensor_readings.durable_write_ts",
 	HeatIndex:       "sensor_readings.heat_index",
 	AirQualityIndex: "sensor_readings.air_quality_index",
 }
@@ -160,6 +165,7 @@ var SensorReadingWhere = struct {
 	Co2             whereHelperfloat64
 	Timestamp       whereHelpertime_Time
 	CreatedAt       whereHelpernull_Time
+	DurableWriteTS  whereHelpertime_Time
 	HeatIndex       whereHelpernull_Float64
 	AirQualityIndex whereHelpernull_Int
 }{
@@ -175,6 +181,7 @@ var SensorReadingWhere = struct {
 	Co2:             whereHelperfloat64{field: "\"sensor_readings\".\"co2\""},
 	Timestamp:       whereHelpertime_Time{field: "\"sensor_readings\".\"timestamp\""},
 	CreatedAt:       whereHelpernull_Time{field: "\"sensor_readings\".\"created_at\""},
+	DurableWriteTS:  whereHelpertime_Time{field: "\"sensor_readings\".\"durable_write_ts\""},
 	HeatIndex:       whereHelpernull_Float64{field: "\"sensor_readings\".\"heat_index\""},
 	AirQualityIndex: whereHelpernull_Int{field: "\"sensor_readings\".\"air_quality_index\""},
 }
@@ -235,9 +242,9 @@ func (r *sensorReadingR) GetZone() *Zone {
 type sensorReadingL struct{}
 
 var (
-	sensorReadingAllColumns            = []string{"id", "device_id", "device_name", "device_type", "location", "floor_id", "zone_id", "temperature", "humidity", "co2", "timestamp", "created_at", "heat_index", "air_quality_index"}
-	sensorReadingColumnsWithoutDefault = []string{"device_id", "device_name", "device_type", "location", "floor_id", "zone_id", "timestamp"}
-	sensorReadingColumnsWithDefault    = []string{"id", "temperature", "humidity", "co2", "created_at", "heat_index", "air_quality_index"}
+	sensorReadingAllColumns            = []string{"id", "device_id", "device_name", "device_type", "location", "floor_id", "zone_id", "temperature", "humidity", "co2", "timestamp", "created_at", "durable_write_ts", "heat_index", "air_quality_index"}
+	sensorReadingColumnsWithoutDefault = []string{"device_id", "device_name", "device_type", "location", "floor_id", "zone_id"}
+	sensorReadingColumnsWithDefault    = []string{"id", "temperature", "humidity", "co2", "timestamp", "created_at", "durable_write_ts", "heat_index", "air_quality_index"}
 	sensorReadingPrimaryKeyColumns     = []string{"id", "timestamp"}
 	sensorReadingGeneratedColumns      = []string{"heat_index", "air_quality_index"}
 )
