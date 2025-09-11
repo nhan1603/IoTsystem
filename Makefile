@@ -128,8 +128,11 @@ cass-verify:
 	@echo "Verification complete!"
 
 ## cass-setup: complete Cassandra setup (create, migrate, seed)
-cass-setup: cass-create cass-wait cass-migrate cass-seed
+cass-setup: cass-create cass-wait cass-drop cass-migrate cass-seed
 	@echo "Cassandra setup completed!"
+
+cass-reset: cass-drop cass-migrate cass-seed cass-verify
+	@echo "Cassandra reset completed!"
 
 cass-drop:
 	@echo "Dropping Cassandra keyspace..."
@@ -143,6 +146,39 @@ cass-testing:
 		SELECT COUNT(*) FROM iotsystem.sensor_readings; \
 		SELECT processed_records FROM iotsystem.benchmark_metrics;"
 	@echo "Counting complete!"
+
+
+# Get stats for a specific device (usage: make cass-device-stats DEVICE=TEMP_001)
+cass-device-stats:
+	@echo "Getting stats for device ${DEVICE}..."
+	@docker-compose -f ${DOCKER_COMPOSE_FILE} -p=${PROJECT_NAME} exec -T ${CASSANDRA_CONTAINER} cqlsh -e "\
+		SELECT \
+			device_id, \
+			COUNT(1) as record_count, \
+			MIN(timestamp) as first_reading, \
+			MAX(timestamp) as last_reading \
+		FROM iotsystem.sensor_readings \
+		WHERE device_id='${DEVICE}';"
+
+# Loop through all devices (PowerShell script)
+cass-all-device-stats:
+	@echo "Analyzing all devices..."
+	@powershell -NoProfile -Command "\
+		$$devices = @('TEMP_001', 'HUM_001', 'CO2_001', 'MULTI_001', 'TEMP_002', 'HUM_101', 'HUM_002', 'CO2_002', 'MULTI_002', 'CO2_003'); \
+		foreach ($$device in $$devices) { \
+			Write-Host \"\nAnalyzing $$device...\"; \
+			make cass-device-stats DEVICE=$$device \
+		}"
+	@echo "Analysis complete!"
+
+cass-device-stats-mini:
+	@echo "Getting stats for device ${DEVICE}..."
+	@docker-compose -f ${DOCKER_COMPOSE_FILE} -p=${PROJECT_NAME} exec -T ${CASSANDRA_CONTAINER} cqlsh -e "\
+		SELECT \
+			COUNT(1) as record_count, \
+			MIN(timestamp) as first_reading, \
+			MAX(timestamp) as last_reading \
+		FROM iotsystem.sensor_readings;"
 
 # ----------------------------
 # simulator

@@ -1,7 +1,6 @@
 {
-  "dashboard": {
+  "title": "IoT System Overview",
     "id": null,
-    "title": "IoT System Overview",
     "tags": ["iot", "system", "overview"],
     "style": "dark",
     "timezone": "browser",
@@ -637,4 +636,3 @@
     "version": 1,
     "links": []
   }
-} 

@@ -60,7 +60,7 @@ CREATE TABLE sensor_readings
     temperature DOUBLE PRECISION NOT NULL DEFAULT 0.0,
     humidity DOUBLE PRECISION NOT NULL DEFAULT 0.0,
     co2 DOUBLE PRECISION NOT NULL DEFAULT 0.0,
-    timestamp TIMESTAMP NOT NULL,
+    timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id, timestamp),
     -- Idempotency key for exactly-once-ish writes:
@@ -100,6 +100,7 @@ CREATE TABLE benchmark_metrics
     end_time TIMESTAMP NOT NULL,
     average_latency DOUBLE PRECISION NOT NULL,
     throughput DOUBLE PRECISION NOT NULL,
+    end_to_end_latency DOUBLE PRECISION NOT NULL,
     batch_size INTEGER NOT NULL,
     database_type VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

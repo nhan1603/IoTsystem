@@ -34,7 +34,6 @@ CREATE TABLE IF NOT EXISTS sensor_readings (
     co2 double,
     timestamp timestamp,
     created_at timestamp,
-    // Add computed columns
     heat_index double,      // Storing pre-computed heat index
     air_quality_index int,  // Storing pre-computed air quality index
     PRIMARY KEY ((device_id), timestamp)
@@ -48,7 +47,6 @@ CREATE TABLE IF NOT EXISTS benchmark_metrics (
     start_time timestamp,
     end_time timestamp,
     average_latency double,
-    end_to_end_latency double,
     throughput double,
     batch_size int,
     database_type text,

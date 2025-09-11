@@ -28,10 +28,12 @@ VALUES
     
     -- Ground Floor, Zone B devices
     ('TEMP_002', 'Temperature Sensor 2', 'temperature', 'Main Building', 1, 2),
+    ('HUM_101', 'Humidity Sensor 1.5', 'humidity', 'Main Building', 1, 2),
     
     -- First Floor, Zone A devices
     ('HUM_002', 'Humidity Sensor 2', 'humidity', 'Main Building', 2, 3),
     ('CO2_002', 'CO2 Sensor 2', 'co2', 'Main Building', 2, 3),
     
     -- First Floor, Zone B devices
-    ('MULTI_002', 'Multi Sensor 2', 'multi', 'Main Building', 2, 4);
+    ('MULTI_002', 'Multi Sensor 2', 'multi', 'Main Building', 2, 4),
+    ('CO2_003', 'CO2 Sensor 3', 'co2', 'Main Building', 2, 4);

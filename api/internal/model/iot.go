@@ -88,6 +88,7 @@ type BenchmarkMetrics struct {
 	StartTime        time.Time
 	EndTime          time.Time
 	AverageLatency   float64
+	EndToEndLatency  float64
 	Throughput       float64 // records per second
 	BatchSize        int
 	DatabaseType     string

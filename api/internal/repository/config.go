@@ -38,7 +38,7 @@ func FromEnv() Config {
 		PGURL:           getenv("PG_URL", "postgres://postgres:postgres@localhost:5432/iotsystem-pg?sslmode=disable"),
 		CassHosts:       split(getenv("CASSANDRA_HOSTS", "127.0.0.1")),
 		CassKeyspace:    getenv("CASSANDRA_KEYSPACE", "iotsystem"),
-		CassConsistency: getenv("CASSANDRA_CONSISTENCY", "QUORUM"),
+		CassConsistency: getenv("CASSANDRA_CONSISTENCY", "ONE"),
 		CassTimeout:     10 * time.Second,
 	}
 }

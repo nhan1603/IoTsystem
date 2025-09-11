@@ -22,14 +22,6 @@ scrape_configs:
     scrape_interval: 10s
     scrape_timeout: 5s
 
-  # IoT Simulator
-  - job_name: "iot-simulator"
-    static_configs:
-      - targets: ["simulator:3001"]
-    metrics_path: "/metrics"
-    scrape_interval: 10s
-    scrape_timeout: 5s
-
   # Node Exporter (Host metrics)
   - job_name: "node-exporter"
     static_configs:
@@ -71,11 +63,3 @@ scrape_configs:
     scrape_interval: 15s
     params:
       container: ["api", "simulator", "database", "kafka", "zookeeper"]
-
-  # IoT System Health Check
-  - job_name: "iot-health"
-    static_configs:
-      - targets: ["server:3001"]
-    metrics_path: "/health"
-    scrape_interval: 30s
-    scrape_timeout: 10s

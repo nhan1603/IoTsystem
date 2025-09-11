@@ -13,12 +13,14 @@ import (
 )
 
 type cassandraImpl struct {
-	session *gocqlx.Session
+	session   *gocqlx.Session
+	tsDeduper *TsDeduper
 }
 
 func NewCassandra(session gocqlx.Session) iotsystem.Repository {
 	return &cassandraImpl{
-		session: &session,
+		session:   &session,
+		tsDeduper: NewTsDeduper(),
 	}
 }
 
@@ -74,11 +76,11 @@ func (c *cassandraImpl) GetDevices(ctx context.Context) ([]model.IoTDevice, erro
 
 func (c *cassandraImpl) BatchInsertReadings(ctx context.Context, readings []model.SensorReading) error {
 	batch := c.session.Session.NewBatch(gocql.UnloggedBatch)
-
+	batch.SetConsistency(gocql.One)
 	stmt, _ := qb.Insert("sensor_readings").
 		Columns("id", "device_id", "device_name", "device_type", "location",
-			"floor_id", "zone_id", "temperature", "humidity", "co2",
-			"timestamp", "created_at", "heat_index", "air_quality_index").
+			"floor_id", "zone_id", "temperature", "humidity", "co2", "timestamp",
+			"created_at", "heat_index", "air_quality_index").
 		ToCql()
 
 	for _, reading := range readings {
@@ -97,6 +99,8 @@ func (c *cassandraImpl) BatchInsertReadings(ctx context.Context, readings []mode
 			airQualityIndex = 2
 		}
 
+		ts := c.tsDeduper.Next(reading.DeviceID, reading.Timestamp)
+
 		batch.Query(stmt,
 			gocql.TimeUUID(),
 			reading.DeviceID,
@@ -108,7 +112,7 @@ func (c *cassandraImpl) BatchInsertReadings(ctx context.Context, readings []mode
 			reading.Temperature,
 			reading.Humidity,
 			reading.CO2,
-			reading.Timestamp,
+			ts,
 			time.Now(),
 			heatIndex,
 			airQualityIndex,
@@ -120,6 +124,53 @@ func (c *cassandraImpl) BatchInsertReadings(ctx context.Context, readings []mode
 	}
 
 	return nil
+
+	// stmt, _ := qb.Insert("sensor_readings").
+	// 	Columns("id", "device_id", "device_name", "device_type", "location",
+	// 		"floor_id", "zone_id", "temperature", "humidity", "co2",
+	// 		"timestamp", "created_at", "heat_index", "air_quality_index").
+	// 	ToCql()
+
+	// // Limit in-flight writes
+	// const maxInFlight = 128
+	// sem := make(chan struct{}, maxInFlight)
+	// errCh := make(chan error, len(readings))
+	// var wg sync.WaitGroup
+
+	// for _, r := range readings {
+	// 	r := r
+	// 	wg.Add(1)
+	// 	sem <- struct{}{}
+	// 	go func() {
+	// 		defer wg.Done()
+	// 		defer func() { <-sem }()
+	// 		heatIndex := 0.5 * (r.Temperature + 61.0 + ((r.Temperature - 68.0) * 1.2) + (r.Humidity * 0.094))
+	// 		aqi := 1
+	// 		switch {
+	// 		case r.CO2 >= 5000:
+	// 			aqi = 4
+	// 		case r.CO2 >= 2000:
+	// 			aqi = 3
+	// 		case r.CO2 >= 1000:
+	// 			aqi = 2
+	// 		}
+	// 		err := c.session.Session.Query(stmt,
+	// 			gocql.TimeUUID(), r.DeviceID, r.DeviceName, r.DeviceType, r.Location,
+	// 			r.Floor, r.Zone, r.Temperature, r.Humidity, r.CO2,
+	// 			r.Timestamp, time.Now(), heatIndex, aqi,
+	// 		).Consistency(gocql.One).WithContext(ctx).Exec()
+	// 		if err != nil {
+	// 			errCh <- err
+	// 		}
+	// 	}()
+	// }
+	// wg.Wait()
+	// close(errCh)
+	// for err := range errCh {
+	// 	if err != nil {
+	// 		return fmt.Errorf("cass write error: %w", err)
+	// 	}
+	// }
 }
 
 func (c *cassandraImpl) GetReadings(ctx context.Context, input model.GetReadingsInput) ([]model.SensorReading, error) {
@@ -216,22 +267,23 @@ func (c *cassandraImpl) GetBenchmarkMetrics(ctx context.Context, limit int) ([]m
 func (c *cassandraImpl) SaveBenchmarkMetrics(ctx context.Context, metrics model.BenchmarkMetrics) error {
 	stmt, names := qb.Insert("benchmark_metrics").
 		Columns("id", "total_records", "processed_records", "failed_records",
-			"start_time", "end_time", "average_latency", "throughput",
+			"start_time", "end_time", "average_latency", "end_to_end_latency", "throughput",
 			"batch_size", "database_type", "created_at").
 		ToCql()
 
 	q := c.session.Query(stmt, names).BindMap(qb.M{
-		"id":                gocql.TimeUUID(),
-		"total_records":     metrics.TotalRecords,
-		"processed_records": metrics.ProcessedRecords,
-		"failed_records":    metrics.FailedRecords,
-		"start_time":        metrics.StartTime,
-		"end_time":          metrics.EndTime,
-		"average_latency":   metrics.AverageLatency,
-		"throughput":        metrics.Throughput,
-		"batch_size":        metrics.BatchSize,
-		"database_type":     metrics.DatabaseType,
-		"created_at":        time.Now(),
+		"id":                 gocql.TimeUUID(),
+		"total_records":      metrics.TotalRecords,
+		"processed_records":  metrics.ProcessedRecords,
+		"failed_records":     metrics.FailedRecords,
+		"start_time":         metrics.StartTime,
+		"end_time":           metrics.EndTime,
+		"average_latency":    metrics.AverageLatency,
+		"end_to_end_latency": metrics.EndToEndLatency,
+		"throughput":         metrics.Throughput,
+		"batch_size":         metrics.BatchSize,
+		"database_type":      metrics.DatabaseType,
+		"created_at":         time.Now(),
 	})
 
 	if err := q.Exec(); err != nil {

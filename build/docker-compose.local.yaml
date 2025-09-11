@@ -69,7 +69,7 @@ services:
       KAFKA_BROKER: "kafka:9092"
       IOT_TOPIC: "iot.sensor"
       BATCH_SIZE: "100"
-      BATCH_TIMEOUT: "5s"
+      BATCH_TIMEOUT: "100s"
       SERVER_ADDR: ":3001"
       DB_BACKEND: "cassandra"
       # Cassandra config
@@ -77,7 +77,7 @@ services:
       CASSANDRA_KEYSPACE: "iotsystem"
       CASSANDRA_USERNAME: "cassandra"
       CASSANDRA_PASSWORD: "cassandra"
-      CASSANDRA_CONSISTENCY: "quorum"
+      CASSANDRA_CONSISTENCY: "ONE"
 
   zookeeper:
     container_name: iot-zookeeper
@@ -145,7 +145,7 @@ services:
       CASSANDRA_KEYSPACE: "iotsystem"
       CASSANDRA_USERNAME: "cassandra"
       CASSANDRA_PASSWORD: "cassandra"
-      CASSANDRA_CONSISTENCY: "quorum"
+      CASSANDRA_CONSISTENCY: "ONE"
 
   cassandra:
     image: cassandra:5.0

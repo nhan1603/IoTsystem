@@ -20,6 +20,7 @@ type BenchmarkMetrics struct {
 	FailedRecords    int64
 	StartTime        time.Time
 	LastProcessed    time.Time
+	EndToEndLatency  time.Duration
 	BatchCount       int64
 	TotalLatency     time.Duration
 }
@@ -84,7 +85,8 @@ func (c *impl) HandleBatch(ctx context.Context, msgs []kafka.ConsumerMessage) er
 
 	// Record metrics only after commit
 	latency := time.Since(start)
-	c.updateMetrics(len(readings), latency)
+	endToEndLatency := time.Since(readings[0].CreatedAt)
+	c.updateMetrics(len(readings), latency, endToEndLatency)
 	c.SaveMetrics(ctx)
 
 	obsmetrics.ProcessingLatency.WithLabelValues("batch").Observe(time.Since(start).Seconds())
@@ -94,7 +96,7 @@ func (c *impl) HandleBatch(ctx context.Context, msgs []kafka.ConsumerMessage) er
 }
 
 // updateMetrics updates performance metrics
-func (c *impl) updateMetrics(recordCount int, latency time.Duration) {
+func (c *impl) updateMetrics(recordCount int, latency, endToEndLatency time.Duration) {
 	c.metricsMutex.Lock()
 	defer c.metricsMutex.Unlock()
 
@@ -102,6 +104,7 @@ func (c *impl) updateMetrics(recordCount int, latency time.Duration) {
 	c.metrics.TotalRecords += int64(recordCount)
 	c.metrics.BatchCount++
 	c.metrics.TotalLatency += latency
+	c.metrics.EndToEndLatency += endToEndLatency
 	c.metrics.LastProcessed = time.Now()
 }
 
@@ -124,9 +127,16 @@ func (c *impl) GetMetrics() model.BenchmarkMetrics {
 	c.metricsMutex.RLock()
 	defer c.metricsMutex.RUnlock()
 
+	// Calculate average latency
 	var avgLatency float64
 	if c.metrics.BatchCount > 0 {
 		avgLatency = float64(c.metrics.TotalLatency.Milliseconds()) / float64(c.metrics.BatchCount)
+	}
+
+	// Calculate average end-to-end latency
+	var avgE2ELatency float64
+	if c.metrics.BatchCount > 0 {
+		avgE2ELatency = float64(c.metrics.EndToEndLatency.Milliseconds()) / float64(c.metrics.BatchCount)
 	}
 
 	var throughput float64
@@ -144,6 +154,7 @@ func (c *impl) GetMetrics() model.BenchmarkMetrics {
 		StartTime:        c.metrics.StartTime,
 		EndTime:          c.metrics.LastProcessed,
 		AverageLatency:   avgLatency,
+		EndToEndLatency:  avgE2ELatency,
 		Throughput:       throughput,
 		BatchSize:        c.batchSize,
 		DatabaseType:     "PostgreSQL",

@@ -25,13 +25,15 @@ type Repository interface {
 // New returns an implementation instance satisfying Repository
 func New(dbConn boil.ContextExecutor) Repository {
 	return impl{
-		dbConn: dbConn,
+		dbConn:    dbConn,
+		tsDeduper: NewTsDeduper(),
 	}
 
 }
 
 type impl struct {
-	dbConn boil.ContextExecutor
+	dbConn    boil.ContextExecutor
+	tsDeduper *TsDeduper
 }
 
 // GetDevices retrieves all IoT devices
@@ -182,6 +184,8 @@ func (r impl) BatchInsertReadings(ctx context.Context, readings []model.SensorRe
 			argCount+1, argCount+2, argCount+3, argCount+4, argCount+5, argCount+6,
 			argCount+7, argCount+8, argCount+9, argCount+10, argCount+11))
 
+		ts := r.tsDeduper.Next(reading.DeviceID, reading.Timestamp)
+
 		valueArgs = append(valueArgs,
 			reading.DeviceID,
 			reading.DeviceName,
@@ -192,7 +196,7 @@ func (r impl) BatchInsertReadings(ctx context.Context, readings []model.SensorRe
 			reading.Temperature,
 			reading.Humidity,
 			reading.CO2,
-			reading.Timestamp,
+			ts,
 			reading.CreatedAt,
 		)
 		argCount += 11
@@ -201,11 +205,7 @@ func (r impl) BatchInsertReadings(ctx context.Context, readings []model.SensorRe
 	query += strings.Join(valueStrings, ",")
 	query += `
         ON CONFLICT ON CONSTRAINT uq_device_ts 
-        DO UPDATE SET 
-            temperature = sensor_readings.temperature,
-            humidity = sensor_readings.humidity,
-            co2 = sensor_readings.co2
-    `
+		DO NOTHING`
 
 	// Execute batch insert
 	_, err := r.dbConn.ExecContext(ctx, query, valueArgs...)
@@ -262,6 +262,7 @@ func (r impl) SaveBenchmarkMetrics(ctx context.Context, metrics model.BenchmarkM
 		Throughput:       metrics.Throughput,
 		BatchSize:        metrics.BatchSize,
 		DatabaseType:     metrics.DatabaseType,
+		EndToEndLatency:  metrics.EndToEndLatency, // New field
 	}
 
 	err := metricsDb.Insert(ctx, r.dbConn, boil.Infer())

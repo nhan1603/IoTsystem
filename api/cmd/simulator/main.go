@@ -38,5 +38,7 @@ func main() {
 		os.Getenv("IOT_TOPIC"),
 	)
 	ctrl.Simulate(ctx)
-	select {}
+
+	log.Println("[Simulator] Simulation completed, cleaning up...")
+	producer.Close()
 }

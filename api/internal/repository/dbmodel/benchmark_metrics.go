@@ -32,6 +32,7 @@ type BenchmarkMetric struct {
 	EndTime          time.Time `boil:"end_time" json:"end_time" toml:"end_time" yaml:"end_time"`
 	AverageLatency   float64   `boil:"average_latency" json:"average_latency" toml:"average_latency" yaml:"average_latency"`
 	Throughput       float64   `boil:"throughput" json:"throughput" toml:"throughput" yaml:"throughput"`
+	EndToEndLatency  float64   `boil:"end_to_end_latency" json:"end_to_end_latency" toml:"end_to_end_latency" yaml:"end_to_end_latency"`
 	BatchSize        int       `boil:"batch_size" json:"batch_size" toml:"batch_size" yaml:"batch_size"`
 	DatabaseType     string    `boil:"database_type" json:"database_type" toml:"database_type" yaml:"database_type"`
 	CreatedAt        null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
@@ -49,6 +50,7 @@ var BenchmarkMetricColumns = struct {
 	EndTime          string
 	AverageLatency   string
 	Throughput       string
+	EndToEndLatency  string
 	BatchSize        string
 	DatabaseType     string
 	CreatedAt        string
@@ -61,6 +63,7 @@ var BenchmarkMetricColumns = struct {
 	EndTime:          "end_time",
 	AverageLatency:   "average_latency",
 	Throughput:       "throughput",
+	EndToEndLatency:  "end_to_end_latency",
 	BatchSize:        "batch_size",
 	DatabaseType:     "database_type",
 	CreatedAt:        "created_at",
@@ -75,6 +78,7 @@ var BenchmarkMetricTableColumns = struct {
 	EndTime          string
 	AverageLatency   string
 	Throughput       string
+	EndToEndLatency  string
 	BatchSize        string
 	DatabaseType     string
 	CreatedAt        string
@@ -87,6 +91,7 @@ var BenchmarkMetricTableColumns = struct {
 	EndTime:          "benchmark_metrics.end_time",
 	AverageLatency:   "benchmark_metrics.average_latency",
 	Throughput:       "benchmark_metrics.throughput",
+	EndToEndLatency:  "benchmark_metrics.end_to_end_latency",
 	BatchSize:        "benchmark_metrics.batch_size",
 	DatabaseType:     "benchmark_metrics.database_type",
 	CreatedAt:        "benchmark_metrics.created_at",
@@ -254,6 +259,7 @@ var BenchmarkMetricWhere = struct {
 	EndTime          whereHelpertime_Time
 	AverageLatency   whereHelperfloat64
 	Throughput       whereHelperfloat64
+	EndToEndLatency  whereHelperfloat64
 	BatchSize        whereHelperint
 	DatabaseType     whereHelperstring
 	CreatedAt        whereHelpernull_Time
@@ -266,6 +272,7 @@ var BenchmarkMetricWhere = struct {
 	EndTime:          whereHelpertime_Time{field: "\"benchmark_metrics\".\"end_time\""},
 	AverageLatency:   whereHelperfloat64{field: "\"benchmark_metrics\".\"average_latency\""},
 	Throughput:       whereHelperfloat64{field: "\"benchmark_metrics\".\"throughput\""},
+	EndToEndLatency:  whereHelperfloat64{field: "\"benchmark_metrics\".\"end_to_end_latency\""},
 	BatchSize:        whereHelperint{field: "\"benchmark_metrics\".\"batch_size\""},
 	DatabaseType:     whereHelperstring{field: "\"benchmark_metrics\".\"database_type\""},
 	CreatedAt:        whereHelpernull_Time{field: "\"benchmark_metrics\".\"created_at\""},
@@ -288,8 +295,8 @@ func (*benchmarkMetricR) NewStruct() *benchmarkMetricR {
 type benchmarkMetricL struct{}
 
 var (
-	benchmarkMetricAllColumns            = []string{"id", "total_records", "processed_records", "failed_records", "start_time", "end_time", "average_latency", "throughput", "batch_size", "database_type", "created_at"}
-	benchmarkMetricColumnsWithoutDefault = []string{"total_records", "processed_records", "failed_records", "start_time", "end_time", "average_latency", "throughput", "batch_size", "database_type"}
+	benchmarkMetricAllColumns            = []string{"id", "total_records", "processed_records", "failed_records", "start_time", "end_time", "average_latency", "throughput", "end_to_end_latency", "batch_size", "database_type", "created_at"}
+	benchmarkMetricColumnsWithoutDefault = []string{"total_records", "processed_records", "failed_records", "start_time", "end_time", "average_latency", "throughput", "end_to_end_latency", "batch_size", "database_type"}
 	benchmarkMetricColumnsWithDefault    = []string{"id", "created_at"}
 	benchmarkMetricPrimaryKeyColumns     = []string{"id"}
 	benchmarkMetricGeneratedColumns      = []string{}
