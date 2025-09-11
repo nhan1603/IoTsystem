@@ -5,14 +5,14 @@ SELECT database_type,
     MIN(throughput) as min_throughput,
     AVG(average_latency) as avg_latency
 FROM benchmark_metrics
-WHERE created_at >= NOW() - INTERVAL '24 hours'
+WHERE durable_write_ts >= NOW() - INTERVAL '24 hours'
 GROUP BY database_type;
 
 -- Batch size impact on performance
 SELECT batch_size, AVG(throughput) as avg_throughput,
     AVG(average_latency) as avg_latency, COUNT(*) as num_batches
 FROM benchmark_metrics
-WHERE created_at >= NOW() - INTERVAL '24 hours'
+WHERE durable_write_ts >= NOW() - INTERVAL '24 hours'
 GROUP BY batch_size
 ORDER BY batch_size;
 
@@ -22,7 +22,7 @@ SELECT database_type,
     SUM(failed_records) as total_failed,
     ROUND((SUM(processed_records)::float / NULLIF(SUM(total_records), 0) * 100), 2) as success_rate
 FROM benchmark_metrics
-WHERE created_at >= NOW() - INTERVAL '24 hours'
+WHERE durable_write_ts >= NOW() - INTERVAL '24 hours'
 GROUP BY database_type;
 
 

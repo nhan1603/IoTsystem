@@ -1,16 +1,16 @@
 WITH win AS (
-  SELECT EXTRACT(EPOCH FROM (created_at - "timestamp")) * 1000.0 AS lat_ms
+  SELECT EXTRACT(EPOCH FROM (durable_write_ts - "timestamp")) * 1000.0 AS lat_ms
   FROM sensor_readings
 ),
 per_min AS (
-  SELECT date_trunc('minute', created_at) AS m, COUNT(*) AS rows
+  SELECT date_trunc('minute', durable_write_ts) AS m, COUNT(*) AS rows
   FROM sensor_readings
   GROUP BY 1
 ),
 throughput_calc AS (
   SELECT 
     COUNT(*) as total_records,
-    EXTRACT(EPOCH FROM (MAX(created_at) - MIN(created_at))) as total_seconds
+    EXTRACT(EPOCH FROM (MAX(durable_write_ts) - MIN(durable_write_ts))) as total_seconds
   FROM sensor_readings
 )
 SELECT

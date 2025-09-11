@@ -71,7 +71,7 @@ services:
       BATCH_SIZE: "100"
       BATCH_TIMEOUT: "100s"
       SERVER_ADDR: ":3001"
-      DB_BACKEND: "postgres"
+      DB_BACKEND: "cassandra"
       # Cassandra config
       CASSANDRA_HOSTS: "cass1:9042"
       CASSANDRA_KEYSPACE: "iotsystem"
@@ -139,7 +139,7 @@ services:
       KAFKA_BROKER: "kafka:9092"
       IOT_TOPIC: "iot.sensor"
       PRODUCER_RATE: "100"
-      DB_BACKEND: "postgres"
+      DB_BACKEND: "cassandra"
       # Cassandra config
       CASSANDRA_HOSTS: "cass1:9042"
       CASSANDRA_KEYSPACE: "iotsystem"

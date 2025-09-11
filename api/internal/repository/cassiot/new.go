@@ -75,19 +75,18 @@ func (c *cassandraImpl) GetDevices(ctx context.Context) ([]model.IoTDevice, erro
 }
 
 func (c *cassandraImpl) BatchInsertReadings(ctx context.Context, readings []model.SensorReading) error {
+	// Create raw CQL query to use toTimestamp(now())
+	stmt := `INSERT INTO sensor_readings (
+        id, device_id, device_name, device_type, location,
+        floor_id, zone_id, temperature, humidity, co2, timestamp,
+        created_at, heat_index, air_quality_index, durable_write_ts
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, toTimestamp(now()))`
+
 	batch := c.session.Session.NewBatch(gocql.UnloggedBatch)
 	batch.SetConsistency(gocql.One)
-	stmt, _ := qb.Insert("sensor_readings").
-		Columns("id", "device_id", "device_name", "device_type", "location",
-			"floor_id", "zone_id", "temperature", "humidity", "co2", "timestamp",
-			"created_at", "heat_index", "air_quality_index", "durable_write_ts").
-		ToCql()
 
 	for _, reading := range readings {
-
-		// Calculate heat index
 		heatIndex := 0.5 * (reading.Temperature + 61.0 + ((reading.Temperature - 68.0) * 1.2) + (reading.Humidity * 0.094))
-
 		// Calculate air quality index
 		airQualityIndex := 1
 		switch {
@@ -100,7 +99,6 @@ func (c *cassandraImpl) BatchInsertReadings(ctx context.Context, readings []mode
 		}
 
 		ts := c.tsDeduper.Next(reading.DeviceID, reading.Timestamp)
-
 		batch.Query(stmt,
 			gocql.TimeUUID(),
 			reading.DeviceID,
@@ -116,7 +114,6 @@ func (c *cassandraImpl) BatchInsertReadings(ctx context.Context, readings []mode
 			time.Now(),
 			heatIndex,
 			airQualityIndex,
-			`toTimestamp(now())`,
 		)
 	}
 
@@ -125,53 +122,6 @@ func (c *cassandraImpl) BatchInsertReadings(ctx context.Context, readings []mode
 	}
 
 	return nil
-
-	// stmt, _ := qb.Insert("sensor_readings").
-	// 	Columns("id", "device_id", "device_name", "device_type", "location",
-	// 		"floor_id", "zone_id", "temperature", "humidity", "co2",
-	// 		"timestamp", "created_at", "heat_index", "air_quality_index").
-	// 	ToCql()
-
-	// // Limit in-flight writes
-	// const maxInFlight = 128
-	// sem := make(chan struct{}, maxInFlight)
-	// errCh := make(chan error, len(readings))
-	// var wg sync.WaitGroup
-
-	// for _, r := range readings {
-	// 	r := r
-	// 	wg.Add(1)
-	// 	sem <- struct{}{}
-	// 	go func() {
-	// 		defer wg.Done()
-	// 		defer func() { <-sem }()
-	// 		heatIndex := 0.5 * (r.Temperature + 61.0 + ((r.Temperature - 68.0) * 1.2) + (r.Humidity * 0.094))
-	// 		aqi := 1
-	// 		switch {
-	// 		case r.CO2 >= 5000:
-	// 			aqi = 4
-	// 		case r.CO2 >= 2000:
-	// 			aqi = 3
-	// 		case r.CO2 >= 1000:
-	// 			aqi = 2
-	// 		}
-	// 		err := c.session.Session.Query(stmt,
-	// 			gocql.TimeUUID(), r.DeviceID, r.DeviceName, r.DeviceType, r.Location,
-	// 			r.Floor, r.Zone, r.Temperature, r.Humidity, r.CO2,
-	// 			r.Timestamp, time.Now(), heatIndex, aqi,
-	// 		).Consistency(gocql.One).WithContext(ctx).Exec()
-	// 		if err != nil {
-	// 			errCh <- err
-	// 		}
-	// 	}()
-	// }
-	// wg.Wait()
-	// close(errCh)
-	// for err := range errCh {
-	// 	if err != nil {
-	// 		return fmt.Errorf("cass write error: %w", err)
-	// 	}
-	// }
 }
 
 func (c *cassandraImpl) GetReadings(ctx context.Context, input model.GetReadingsInput) ([]model.SensorReading, error) {
